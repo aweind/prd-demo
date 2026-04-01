@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需求原型：自定义 HTML 可视化编辑器</title>
+    <style>
+        :root {
+            --primary-color: #4a68ff;
+            --sidebar-bg: #f7f9fa;
+            --header-bg: #ffffff;
+            --main-bg: #f5f7f9;
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --text-light: #999999;
+            --border-color: #ebeef5;
+            --card-bg: #ffffff;
+            --danger-color: #ff4d4f;
+            --success-color: #52c41a;
+            --prd-w: 320px;
+            --proto-w: 1600px;
+            --nav-height: 56px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--main-bg);
+            overflow: hidden;
+            margin: 0;
+            padding-top: var(--nav-height);
+        }
+
+        /* --- GLOBAL NAVIGATION --- */
+        .global-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: #d6d6d6;
+            border-bottom: 1px solid #c0c0c0;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 10000;
+        }
+
+        .nav-extra-trigger {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .nav-extra-trigger:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-label {
+            font-size: 14px;
+            color: #333;
+            margin-left: 24px;
+            margin-right: 12px;
+        }
+
+        .nav-tab-item {
+            height: 32px;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 4px;
+            border: none;
+            background: #ffffff;
+            color: #333;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin-right: 4px;
+        }
+
+        .nav-tab-item.active {
+            background: #4a68ff;
+            color: #ffffff;
+        }
+
+        .requirement-dropdown {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            width: 480px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 24px;
+            z-index: 10001;
+            display: none;
+        }
+
+        .requirement-dropdown.active {
+            display: block;
+        }
+
+        /* --- LAYOUT WRAPPER (1920px) --- */
+        .layout-wrapper {
+            display: flex;
+            width: 1920px;
+            height: calc(100vh - var(--nav-height));
+        }
+
+        /* PROTOTYPE AREA (1600px) */
+        .prototype-container {
+            width: var(--proto-w);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            overflow: hidden;
+            position: relative;
+            border-right: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        /* PRD PANEL (320px) */
+        .prd-container {
+            width: var(--prd-w);
+            height: 100%;
+            background: #fdfdfd;
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+            z-index: 101;
+        }
+
+        .prd-header {
+            padding: 16px 20px;
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: 600;
+            background: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .prd-body {
+            padding: 24px;
+        }
+
+        .prd-section {
+            margin-bottom: 24px;
+        }
+
+        .prd-section h4 {
+            font-size: 14px;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .prd-section h4::before {
+            content: '';
+            width: 4px;
+            height: 14px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .prd-section li {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.6;
+            list-style: none;
+            padding-left: 14px;
+            position: relative;
+        }
+
+        .prd-section li::after {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+        }
+
+        /* --- DEMOSTORE EDITOR INTERFACE --- */
+        .editor-header {
+            height: 50px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: #fff;
+        }
+
+        .editor-main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            background: #f0f2f5;
+        }
+
+        /* Sidebar Left: Module List */
+        .sidebar-left {
+            width: 280px;
+            border-right: 1px solid var(--border-color);
+            background: #f7f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-tabs {
+            display: flex;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-tab {
+            flex: 1;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .sidebar-tab.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .sidebar-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-color);
+        }
+
+        .module-list {
+            padding: 12px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .module-group {
+            background: #fff;
+            border-radius: 4px;
+            border: 1px solid #eee;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .module-item {
+            height: 44px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            border-bottom: 1px solid #f5f5f5;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .module-item:last-child {
+            border-bottom: none;
+        }
+
+        .module-item:hover {
+            background: #fcfcfc;
+        }
+
+        .module-item.active {
+            background: #f0f7ff;
+            border-left: 3px solid var(--primary-color);
+            padding-left: 9px;
+        }
+
+        .module-drag {
+            width: 20px;
+            display: flex;
+            align-items: center;
+            color: #ccc;
+            cursor: grab;
+        }
+
+        .module-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: #555;
+        }
+
+        .module-name {
+            font-size: 13px;
+            color: #333;
+            flex: 1;
+        }
+
+        .module-opt {
+            color: #ccc;
+            cursor: pointer;
+        }
+
+        .module-opt:hover {
+            color: var(--primary-color);
+        }
+
+        .add-module-item {
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            background: #fff;
+            border-radius: 4px;
+            border: 1px solid #eee;
+            margin-bottom: 12px;
+        }
+
+        .add-module-item:hover {
+            background: #f0f7ff;
+        }
+
+        /* Sidebar Right: Config */
+        .sidebar-right {
+            width: 300px;
+            border-left: 1px solid var(--border-color);
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Middle: Preview Stage */
+        .editor-content {
+            flex: 1;
+            background: #e8eaed;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        .iframe-mock {
+            width: 900px;
+            background: #fff;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            min-height: 100%;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        /* SKELETONS */
+        .skeleton {
+            background: #f0f2f5;
+            border-radius: 4px;
+        }
+
+        /* VISUAL BUTTON */
+        .visual-edit-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #fff;
+        }
+
+        .visual-edit-btn:hover {
+            background: #f0f5ff;
+        }
+
+        .code-input {
+            width: 100%;
+            height: 260px;
+            font-family: monospace;
+            font-size: 11px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            background: #fafafa;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        /* FULLSCREEN MODAL - INTERNAL ONLY */
+        .visual-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #fff;
+            z-index: 20000;
+            display: none;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+        }
+
+        .visual-modal-overlay.active {
+            display: flex;
+        }
+
+        .v-header {
+            height: 60px;
+            border-bottom: 2px solid var(--primary-color);
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .v-main {
+            flex: 1;
+            display: flex;
+            background: #f5f7f9;
+        }
+
+        .v-stage-scroll {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        .v-sidebar {
+            width: 320px;
+            background: #fff;
+            border-left: 1px solid var(--border-color);
+            padding: 24px;
+        }
+
+        .v-stage {
+            width: 1000px;
+            background: #fff;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .editable-element:hover {
+            outline: 2px solid var(--primary-color) !important;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .editable-element:hover::after {
+            content: '点击修改';
+            position: absolute;
+            top: -20px;
+            left: 0;
+            background: var(--primary-color);
+            color: #fff;
+            font-size: 10px;
+            padding: 1px 4px;
+            border-radius: 2px;
+        }
+
+        .btn-blue {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-gray {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            color: #666;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="global-nav">
+        <div class="nav-extra-trigger" onclick="toggleReq()">
+            需求说明
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="#333" style="margin-left:4px;">
+                <path d="M7 10l5 5 5-5z" />
+            </svg>
+        </div>
+        <div class="nav-label">本需求影响页面：</div>
+        <div class="nav-tabs">
+            <a href="自定义Html可视化编辑.html" class="nav-tab-item active">V1主题编辑器</a>
+            <a href="可视化编辑器.html" class="nav-tab-item">可视化编辑器</a>
+        </div>
+
+        <div class="requirement-dropdown" id="reqDrop">
+            <h3 style="font-size:16px; margin-bottom:12px;">需求背景与目标</h3>
+            <p style="font-size:13px; color:#666; line-height:1.6; margin-bottom:16px;">
+                针对不具备编程能力的运营人员，提供基于“预设HTML代码”的可视化编辑能力。运营可直接在实时预览区点击文字、图片进行内容替换，系统自动回写原始代码，确保页面结构稳定的同时极大降低维护成本。
+            </p>
+            <h3 style="font-size:14px; margin-bottom:8px;">核心设计原则</h3>
+            <ul style="font-size:12px; color:#777; padding-left:16px;">
+                <li>内容与结构分离：仅支持内容替换，不允许通过可视化模式改变HTML结构。</li>
+                <li>沉浸式全屏体验：编辑期间屏蔽非核心噪音。</li>
+                <li>实时双向同步。</li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="layout-wrapper">
+        <!-- PROTOTYPE -->
+        <div class="prototype-container">
+            <div class="editor-header">
+                <div style="font-size:13px; color:#666;">Demostore 主题编辑器</div>
+                <div style="display:flex; gap:12px;">
+                    <div class="skeleton" style="width:100px; height:24px;"></div>
+                    <div class="btn-blue" style="padding:4px 16px; font-size:12px;">保存</div>
+                </div>
+            </div>
+
+            <div class="editor-main">
+                <aside class="sidebar-left">
+                    <div class="sidebar-tabs">
+                        <div class="sidebar-tab active">页面模块</div>
+                        <div class="sidebar-tab">全局设置</div>
+                    </div>
+                    <div class="module-list">
+                        <!-- Upper modules -->
+                        <div class="module-group">
+                            <div class="module-item">
+                                <div class="module-icon"><svg width="14" height="14" fill="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path
+                                            d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H4V4h16v16zM6 13h12v2H6zm0-4h12v2H6zm0-4h12v2H6z" />
+                                    </svg></div>
+                                <div class="module-name">公告栏</div>
+                            </div>
+                            <div class="module-item">
+                                <div class="module-icon"><svg width="14" height="14" fill="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path
+                                            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h10V7H7v3z" />
+                                    </svg></div>
+                                <div class="module-name">单页页头</div>
+                            </div>
+                        </div>
+
+                        <!-- Content modules -->
+                        <div class="module-group">
+                            <div class="module-item active">
+                                <div class="module-drag"><svg width="12" height="12" fill="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <circle cx="10" cy="7" r="1.5" />
+                                        <circle cx="14" cy="7" r="1.5" />
+                                        <circle cx="10" cy="12" r="1.5" />
+                                        <circle cx="14" cy="12" r="1.5" />
+                                        <circle cx="10" cy="17" r="1.5" />
+                                        <circle cx="14" cy="17" r="1.5" />
+                                    </svg></div>
+                                <div class="module-icon"><svg width="14" height="14" fill="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path d="M9.4 16.6l4.6-4.6-4.6-4.6L10.8 6l6 6-6 6z" />
+                                    </svg></div>
+                                <div class="module-name">自定义Html</div>
+                                <div class="module-opt"><svg width="12" height="12" fill="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path
+                                            d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22l-1.92 3.32c-.12.21-.07.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                                    </svg></div>
+                            </div>
+                            <div class="module-item">
+                                <div class="module-drag"><svg width="12" height="12" fill="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <circle cx="10" cy="7" r="1.5" />
+                                        <circle cx="14" cy="7" r="1.5" />
+                                        <circle cx="10" cy="12" r="1.5" />
+                                        <circle cx="14" cy="12" r="1.5" />
+                                        <circle cx="10" cy="17" r="1.5" />
+                                        <circle cx="14" cy="17" r="1.5" />
+                                    </svg></div>
+                                <div class="module-icon"><svg width="14" height="14" fill="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                    </svg></div>
+                                <div class="module-name">百货商品详情</div>
+                            </div>
+                            <div class="module-item">
+                                <div class="module-drag"><svg width="12" height="12" fill="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <circle cx="10" cy="7" r="1.5" />
+                                        <circle cx="14" cy="7" r="1.5" />
+                                        <circle cx="10" cy="12" r="1.5" />
+                                        <circle cx="14" cy="12" r="1.5" />
+                                        <circle cx="10" cy="17" r="1.5" />
+                                        <circle cx="14" cy="17" r="1.5" />
+                                    </svg></div>
+                                <div class="module-icon"><svg width="14" height="14" fill="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path d="M9.4 16.6l4.6-4.6-4.6-4.6L10.8 6l6 6-6 6z" />
+                                    </svg></div>
+                                <div class="module-name">自定义Html</div>
+                                <div class="module-opt"><svg width="12" height="12" fill="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path
+                                            d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22l-1.92 3.32c-.12.21-.07.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                                    </svg></div>
+                            </div>
+                        </div>
+
+                        <div class="add-module-item">+ 添加模块</div>
+
+                        <!-- Footer -->
+                        <div class="module-group">
+                            <div class="module-item">
+                                <div class="module-icon"><svg width="14" height="14" fill="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path
+                                            d="M13 13h-2v-2h2v2zm0-4h-2V7h2v2zm0 8h-2v-2h2v2zm6-14H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+                                    </svg></div>
+                                <div class="module-name">页脚</div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <div class="editor-content">
+                    <div class="iframe-mock" id="mainPreview">
+                        <!-- Content -->
+                    </div>
+                </div>
+
+                <aside class="sidebar-right">
+                    <div
+                        style="padding:16px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:600; font-size:13px;">自定义Html</span>
+                        <a href="可视化编辑器.html" class="visual-edit-btn" style="text-decoration:none;">
+                            <svg width="12" height="12" fill="#4a68ff" viewBox="0 0 24 24" style="margin-right:2px;">
+                                <path
+                                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                            可视化编辑
+                        </a>
+                    </div>
+                    <div style="padding:16px;">
+                        <div style="font-size:12px; color:#999; margin-bottom:8px;">HTML 代码内容</div>
+                        <textarea class="code-input" id="htmlSource"><section style="background:#000; color:#fff; padding:60px; text-align:center;">
+    <div style="max-width:800px; margin:0 auto;">
+        <h1 style="font-size:42px; margin-bottom:20px; font-weight:800;">HIGHLY CONCENTRATED RUST REMOVER</h1>
+        <p style="font-size:16px; color:#999; margin-bottom:32px;">Designed for steel, iron, and aluminum alloys, it instantly dissolves rust.</p>
+        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800" style="width:100%; border-radius:12px; margin-bottom:30px;">
+        <button style="background:#4a68ff; color:#fff; padding:15px 40px; border:none; border-radius:6px; font-size:16px; font-weight:bold; cursor:pointer;">BUY NOW GET 50% OFF</button>
+    </div>
+</section></textarea>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <!-- PRD NOTES -->
+        <div class="prd-container">
+            <div class="prd-header">PRD 注释与交互说明</div>
+            <div class="prd-body">
+                <div class="prd-section">
+                    <h4>交互入口 (Entry)</h4>
+                    <ul>
+                        <li>入口位置：位于右侧模块配置栏（Sidebar-Right）标题右方。</li>
+                        <li>图标语义：Sparkles / Edit，暗示可视化转换能力。</li>
+                    </ul>
+                </div>
+                <div class="prd-section">
+                    <h4>可视化模式规则</h4>
+                    <ul>
+                        <li><strong>元素探测</strong>：鼠标放置在 H1/P/Img 上呈现蓝色探测框。</li>
+                        <li><strong>内容优先</strong>：禁止改变 HTML 层级结构，仅允许文本内容、图片 Src 的赋值。</li>
+                        <li><strong>沉浸式</strong>：进入编辑后，背景主题编辑器全部遮罩，仅保留编辑工具栏。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FULLSCREEN MODAL -->
+    <div class="visual-modal-overlay" id="visualOverlay">
+        <div class="v-header">
+            <div style="font-weight:600; font-size:16px; color:var(--primary-color);">正在编辑：自定义Html #1</div>
+            <div style="display:flex; gap:16px;">
+                <button class="btn-gray" onclick="exitVisualMode(false)">取消放弃</button>
+                <button class="btn-blue" onclick="exitVisualMode(true)">保存并返回编辑器</button>
+            </div>
+        </div>
+        <div class="v-main">
+            <div class="v-stage-scroll">
+                <div class="v-stage" id="veStage"></div>
+            </div>
+            <aside class="v-sidebar">
+                <div id="vTip">
+                    <h4 style="margin-bottom:12px; font-size:14px;">编辑指南</h4>
+                    <p style="font-size:12px; color:#666; line-height:1.6;">点击左侧预览区域的文字或图像开始修改。系统将自动保持您的原始设计结构不受损坏。</p>
+                </div>
+
+                <!-- Text Edit Form -->
+                <div id="vTextForm" style="display:none;">
+                    <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:16px;">
+                        正在修改：内容文本</div>
+                    <label style="font-size:12px; color:#999; margin-bottom:8px; display:block;">文本内容</label>
+                    <textarea id="vTextVal"
+                        style="width:100%; height:120px; padding:10px; border:1px solid #ddd; border-radius:4px; font-size:13px; outline:none;"
+                        oninput="if(activeEl) activeEl.innerText = this.value;"></textarea>
+                </div>
+
+                <!-- Image Edit Form -->
+                <div id="vImgForm" style="display:none;">
+                    <div style="font-size:13px; font-weight:600; color:var(--primary-color); margin-bottom:16px;">
+                        正在修改：图片素材</div>
+                    <div
+                        style="width:100%; aspect-ratio:16/9; background:#f0f2f5; border-radius:8px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:16px; position:relative;">
+                        <img id="vImgPreview" src="" style="width:100%; height:100%; object-fit:contain;">
+                    </div>
+                    <div style="display:flex; gap:8px; margin-bottom:16px;">
+                        <button class="btn-gray" style="flex:1; font-size:12px; padding:6px 0;">上传图片</button>
+                        <button class="btn-gray" style="flex:1; font-size:12px; padding:6px 0;">组件库选择</button>
+                    </div>
+                    <label style="font-size:12px; color:#999; margin-bottom:8px; display:block;">图片来源 (URL)</label>
+                    <input type="text" id="vImgUrl"
+                        style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; font-size:13px; outline:none; margin-bottom:16px;"
+                        oninput="if(activeEl) { activeEl.src = this.value; document.getElementById('vImgPreview').src = this.value; }">
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        const htmlSource = document.getElementById('htmlSource');
+        const mainPreview = document.getElementById('mainPreview');
+        const veStage = document.getElementById('veStage');
+        const visualOverlay = document.getElementById('visualOverlay');
+        let activeEl = null;
+
+        function refreshPreview() { mainPreview.innerHTML = htmlSource.value; }
+        refreshPreview();
+        htmlSource.oninput = refreshPreview;
+
+        function toggleReq() { document.getElementById('reqDrop').classList.toggle('active'); }
+
+        function enterVisualMode() {
+            visualOverlay.classList.add('active');
+            veStage.innerHTML = htmlSource.value;
+
+            const nodes = veStage.querySelectorAll('h1, h2, h3, p, span, button, img');
+            nodes.forEach(el => {
+                el.classList.add('editable-element');
+                el.onclick = (e) => {
+                    e.stopPropagation();
+                    activeEl = el;
+                    document.getElementById('vTip').style.display = 'none';
+                    document.getElementById('vTextForm').style.display = 'none';
+                    document.getElementById('vImgForm').style.display = 'none';
+
+                    if (el.tagName === 'IMG') {
+                        document.getElementById('vImgForm').style.display = 'block';
+                        document.getElementById('vImgUrl').value = el.src;
+                        document.getElementById('vImgPreview').src = el.src;
+                    } else {
+                        document.getElementById('vTextForm').style.display = 'block';
+                        document.getElementById('vTextVal').value = el.innerText;
+                    }
+                };
+            });
+        }
+
+
+        function exitVisualMode(save) {
+            if (save) {
+                const clone = veStage.cloneNode(true);
+                clone.querySelectorAll('.editable-element').forEach(el => el.classList.remove('editable-element'));
+                htmlSource.value = clone.innerHTML;
+                refreshPreview();
+            }
+            visualOverlay.classList.remove('active');
+        }
+
+        document.addEventListener('click', function (e) {
+            const drop = document.getElementById('reqDrop');
+            const trig = document.querySelector('.nav-extra-trigger');
+            if (drop && !drop.contains(e.target) && !trig.contains(e.target)) {
+                drop.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需求原型：收款方式概览</title>
+    <style>
+        :root {
+            --primary-color: #4a68ff;
+            --sidebar-bg: #f7f9fa;
+            --header-bg: #ffffff;
+            --main-bg: #f5f7f9;
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --text-light: #999999;
+            --border-color: #ebeef5;
+            --proto-w: 1600px;
+            --prd-w: 320px;
+            --nav-height: 56px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--main-bg);
+            overflow: hidden;
+            margin: 0;
+            padding-top: var(--nav-height);
+        }
+
+        .global-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: #d6d6d6;
+            border-bottom: 1px solid #c0c0c0;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 10000;
+        }
+
+        .nav-extra-trigger {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .nav-extra-trigger:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-label {
+            font-size: 14px;
+            color: #333;
+            margin-left: 24px;
+            margin-right: 12px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-tab-item {
+            height: 32px;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 4px;
+            border: none;
+            background: #ffffff;
+            color: #333;
+        }
+
+        .nav-tab-item.active {
+            background: #3e7dfb;
+            color: #ffffff;
+        }
+
+        .requirement-dropdown {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            width: 480px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 24px;
+            z-index: 10001;
+            display: none;
+        }
+
+        .requirement-dropdown.active {
+            display: block;
+        }
+
+        .layout-wrapper {
+            display: flex;
+            width: 1920px;
+            height: calc(100vh - var(--nav-height));
+        }
+
+        .prototype-container {
+            width: var(--proto-w);
+            height: 100%;
+            background: #fff;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* SIDEBAR SKELETON */
+        .sidebar {
+            width: 240px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .skeleton {
+            background: #f0f2f5;
+            background: linear-gradient(90deg, #f0f2f5 25%, #e6e8eb 37%, #f0f2f5 63%);
+            background-size: 400% 100%;
+            animation: skeleton-loading 1.4s ease infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0 50%;
+            }
+        }
+
+        /* MAIN */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .top-header {
+            height: 60px;
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 20px;
+        }
+
+        .content-body {
+            padding: 32px;
+            background: #f5f7f9;
+            min-height: 100%;
+        }
+
+        /* PAGE ELEMENTS */
+        .config-card {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 6px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .btn-link {
+            color: var(--primary-color);
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .alert-box {
+            background: #e6f4ff;
+            border: 1px solid #91caff;
+            padding: 12px 16px;
+            border-radius: 4px;
+            display: flex;
+            gap: 10px;
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            width: 680px;
+            background: #fff;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slide-up 0.2s ease-out;
+        }
+
+        @keyframes slide-up {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+            flex: 1;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .search-row {
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 38px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0 36px;
+            outline: none;
+        }
+
+        .channel-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+        }
+
+        .channel-item:hover {
+            border-color: var(--primary-color);
+            background: #fcfdff;
+        }
+
+        .channel-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .channel-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .channel-icons {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        .chip {
+            width: 34px;
+            height: 22px;
+            border: 1px solid #eee;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: #999;
+        }
+
+        .chip img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* PRD */
+        .prd-container {
+            width: var(--prd-w);
+            height: 100%;
+            background: #fff;
+            border-left: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .prd-header {
+            padding: 16px 20px;
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: 600;
+        }
+
+        .prd-body {
+            padding: 24px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="global-nav">
+        <div class="nav-extra-trigger" onclick="toggleReq()">
+            需求说明
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="#333" style="margin-left:4px;">
+                <path d="M7 10l5 5 5-5z" />
+            </svg>
+        </div>
+        <div class="nav-label">本需求影响页面：</div>
+        <div class="nav-tabs">
+            <button class="nav-tab-item active">1. 收款方式概览</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay配置.html'">2. Useepay 配置详情</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay结账.html'">3. 商城结账页</button>
+        </div>
+
+        <div class="requirement-dropdown" id="reqDrop">
+            <h3 style="font-size:16px; margin-bottom:12px;">需求背景与目标</h3>
+            <p style="font-size:13px; color:#666; line-height:1.6; margin-bottom:16px;">
+                新增 Useepay 信用卡支付渠道，实现多支付网关冗余接入，降低单一渠道审核及稳定性风险。支持全球主流信用卡图标展示。
+            </p>
+            <h3 style="font-size:14px; margin-bottom:8px;">核心设计原则</h3>
+            <ul style="font-size:12px; color:#777; padding-left:16px;">
+                <li>全链路演示：覆盖从后台概览、详情配置到前台结账的完整路径。</li>
+                <li>脱噪法原型：非核心改动区域强制使用骨架屏占位。</li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="layout-wrapper">
+        <div class="prototype-container">
+            <div class="sidebar">
+                <div class="skeleton" style="height: 40px; margin-bottom: 24px;"></div>
+                <div class="skeleton" style="height: 20px; width: 80%;"></div>
+                <div class="skeleton" style="height: 20px; width: 60%;"></div>
+                <div class="skeleton" style="height: 20px; width: 70%;"></div>
+            </div>
+
+            <div class="main-container">
+                <div class="top-header">
+                    <div class="skeleton" style="width: 100px; height: 24px;"></div>
+                </div>
+
+                <div class="content-body">
+                    <!-- PARENT CARD (PayPal) - SKELETONIZED -->
+                    <div class="config-card">
+                        <div class="card-header">
+                            <div class="title">
+                                <div class="skeleton" style="width:24px; height:24px;"></div> PayPal
+                            </div>
+                            <div class="btn-link">管理</div>
+                        </div>
+                        <div class="skeleton" style="height: 20px; width: 40%; margin-bottom: 8px;"></div>
+                        <div class="skeleton" style="height: 16px; width: 60%; margin-bottom: 20px;"></div>
+                        <div style="display:flex; gap:12px;">
+                            <button class="btn"
+                                style="background:#fff2f0; color:#ff4d4f; border-color:#ffccc7;">停用</button>
+                        </div>
+                    </div>
+
+                    <!-- CREDIT CARD SECTION -->
+                    <div class="config-card">
+                        <div class="card-header">
+                            <div class="title">信用卡支付</div>
+                            <button class="btn" style="color:var(--primary-color); border-color:var(--primary-color);"
+                                onclick="showModal()">添加支付渠道</button>
+                        </div>
+                        <p style="font-size:12px; color:#999; margin-bottom:20px;">选择通过第三方信用卡支付提供商进行收款</p>
+
+                        <div class="alert-box">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="#1677ff">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                            </svg>
+                            若同时开启多个信用卡支付渠道，店铺结账页会同时展示多种信用卡支付方式。
+                        </div>
+
+                        <!-- ACTIVED GATEWAY (Antom) -->
+                        <div style="border: 1px solid #eee; padding:16px; border-radius:6px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                                <div style="font-size:14px; font-weight:600;">Antom 信用卡支付</div>
+                                <div class="btn-link" style="font-size:12px;">管理</div>
+                            </div>
+                            <div style="font-size:11px; color:#999; margin-bottom:8px;">支持信用卡类型</div>
+                            <div style="display:flex; gap:6px;">
+                                <div class="chip"><img src="../payment_icon/visa.png"></div>
+                                <div class="chip"><img src="../payment_icon/mastercard.png"></div>
+                                <div class="chip"><img src="../payment_icon/jcb.png"></div>
+                                <div class="chip"><img src="../payment_icon/american_express.png"></div>
+                                <div class="chip"><img src="../payment_icon/diners_club.png"></div>
+                                <div class="chip"><img src="../payment_icon/maestro.png"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- OTHER PAYMENTS -->
+                    <div class="config-card">
+                        <div class="card-header">
+                            <div class="title">其他支付</div>
+                            <button class="btn" onclick="showModal()">添加支付渠道</button>
+                        </div>
+                        <p style="font-size:12px; color:#999;">支持添加全球本地支付和电子钱包支付方式</p>
+                    </div>
+                </div>
+
+                <!-- ADD MODAL -->
+                <div class="modal-overlay" id="addModal">
+                    <div class="modal">
+                        <div class="modal-header">
+                            <div style="font-weight:600;">添加支付渠道</div>
+                            <div style="cursor:pointer; color:#999;" onclick="hideModal()">✕</div>
+                        </div>
+                        <div class="modal-body">
+                            <div class="search-row">
+                                <input type="text" class="search-input" placeholder="输入支付渠道进行搜索">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="#999"
+                                    style="position:absolute; left:12px; top:11px;">
+                                    <path
+                                        d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16a6.471 6.471 0 0 0 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                                </svg>
+                            </div>
+
+                            <!-- CHANNEL LIST -->
+                            <div class="channel-item">
+                                <div class="channel-info">
+                                    <div class="channel-name">Useepay 信用卡支付</div>
+                                    <div style="font-size:11px; color:#999;">支持信用卡类型</div>
+                                    <div class="channel-icons">
+                                        <div class="chip"><img src="../payment_icon/visa.png"></div>
+                                        <div class="chip"><img src="../payment_icon/mastercard.png"></div>
+                                        <div class="chip"><img src="../payment_icon/jcb.png"></div>
+                                        <div class="chip"><img src="../payment_icon/american_express.png"></div>
+                                        <div class="chip"><img src="../payment_icon/diners_club.png"></div>
+                                        <div class="chip"><img src="../payment_icon/maestro.png"></div>
+                                    </div>
+                                </div>
+                                <button class="btn"
+                                    style="color:var(--primary-color); border-color:var(--primary-color);"
+                                    onclick="location.href='Useepay配置.html'">添加</button>
+                            </div>
+
+                            <div class="channel-item">
+                                <div class="channel-info">
+                                    <div class="channel-name">Airwallex 信用卡支付</div>
+                                    <div style="font-size:11px; color:#999;">支持信用卡类型</div>
+                                    <div class="channel-icons">
+                                        <div class="chip"><img src="../payment_icon/visa.png"></div>
+                                        <div class="chip"><img src="../payment_icon/mastercard.png"></div>
+                                    </div>
+                                </div>
+                                <button class="btn">添加</button>
+                            </div>
+
+                            <div class="channel-item">
+                                <div class="channel-info">
+                                    <div class="channel-name">Antom 信用卡支付</div>
+                                    <div style="font-size:11px; color:#999;">支持信用卡类型</div>
+                                    <div class="channel-icons">
+                                        <div class="chip"><img src="../payment_icon/visa.png"></div>
+                                        <div class="chip"><img src="../payment_icon/mastercard.png"></div>
+                                        <div class="chip"><img src="../payment_icon/american_express.png"></div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-link">管理</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="prd-container">
+            <div class="prd-header">交互细则：页面 1</div>
+            <div class="prd-body">
+                <p><strong>1. 入口逻辑：</strong></p>
+                <ul style="margin-left: 16px; margin-top: 8px;">
+                    <li>在【其他支付】或【信用卡支付】区域点击【添加支付渠道】。</li>
+                    <li>弹出“添加支付渠道”搜索框，支持模糊匹配。</li>
+                </ul>
+                <p style="margin-top:20px;"><strong>2. 网关状态联动：</strong></p>
+                <ul style="margin-left: 16px; margin-top: 8px;">
+                    <li>若 Useepay 尚未激活，显示【添加】按钮，点击跳转至配置页（配置页内网关未激活状态仅显示激活按钮）。</li>
+                    <li>若配置页点击【激活】成功后，此处概览页将展示该激活卡片，并在弹窗搜索列表中显示【管理】按钮。</li>
+                    <li>若在配置页点击【停用】网关，则概览页移除该激活卡片，恢复为未添加状态。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleReq() {
+            document.getElementById('reqDrop').classList.toggle('active');
+        }
+        document.addEventListener('click', function (e) {
+            const drop = document.getElementById('reqDrop');
+            const trig = document.querySelector('.nav-extra-trigger');
+            if (drop && !drop.contains(e.target) && !trig.contains(e.target)) {
+                drop.classList.remove('active');
+            }
+        });
+        function showModal() { document.getElementById('addModal').classList.add('active'); }
+        function hideModal() { document.getElementById('addModal').classList.remove('active'); }
+    </script>
+</body>
+
+</html>

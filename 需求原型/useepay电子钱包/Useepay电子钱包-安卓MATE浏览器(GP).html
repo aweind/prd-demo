@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需求原型：安卓MATE环境(Google Pay) - Useepay</title>
+    <style>
+        :root {
+            --primary-color: #00848e;
+            --sidebar-bg: #f7f9fa;
+            --main-bg: #ffffff;
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --border-color: #e6e6e6;
+            --prd-w: 320px;
+            --proto-w: 1600px;
+            --nav-height: 56px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7f9;
+            overflow: hidden;
+            padding-top: var(--nav-height);
+        }
+
+        /* --- GLOBAL NAVIGATION --- */
+        .global-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: #d6d6d6;
+            border-bottom: 1px solid #c0c0c0;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 10000;
+        }
+
+        .nav-extra-trigger {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .nav-extra-trigger:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-label {
+            font-size: 14px;
+            color: #333;
+            margin-left: 24px;
+            margin-right: 12px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-tab-item {
+            height: 32px;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 4px;
+            border: none;
+            background: #ffffff;
+            color: #333;
+        }
+
+        .nav-tab-item.active {
+            background: #3e7dfb;
+            color: #ffffff;
+        }
+
+        .layout-wrapper {
+            display: flex;
+            width: 1920px;
+            height: calc(100vh - var(--nav-height));
+        }
+
+        .prototype-container {
+            width: var(--proto-w);
+            height: 100%;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            align-items: center;
+        }
+
+        /* SKELETON SCREEN */
+        .skeleton {
+            background: #f0f2f5;
+            background: linear-gradient(90deg, #f0f2f5 25%, #e6e8eb 37%, #f0f2f5 63%);
+            background-size: 400% 100%;
+            animation: skeleton-loading 1.4s ease infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0 50%;
+            }
+        }
+
+        /* CHECKOUT MOBILE LAYOUT */
+        .mobile-device-frame {
+            width: 390px;
+            height: 844px;
+            background: #f5f5f5;
+            border: 14px solid #111;
+            border-radius: 44px;
+            margin: 40px auto;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), inset 0 0 0 4px #444;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .mobile-device-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 28px;
+            background: #111;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            z-index: 100;
+        }
+
+        .mobile-status-bar {
+            height: 48px;
+            background: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .mate-browser-header {
+            height: 56px;
+            background: #fdfdfd;
+            border-bottom: 1px solid #e1e1e1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            color: #333;
+        }
+
+        .checkout-mobile-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 16px 40px;
+            background: #fff;
+        }
+
+        .checkout-mobile-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* EXPRESS CHECKOUT SECTION */
+        .express-checkout-block {
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            background: #fafafa;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .express-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .express-divider::before,
+        .express-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e1e1e1;
+        }
+
+        .express-divider:not(:empty)::before {
+            margin-right: .5em;
+        }
+
+        .express-divider:not(:empty)::after {
+            margin-left: .5em;
+        }
+
+        .btn-google-pay {
+            width: 100%;
+            height: 48px;
+            background: #fff;
+            color: #3c4043;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 4px;
+            border: 1px solid #dadce0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: 0.2s;
+        }
+
+        .btn-google-pay:hover {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            background: #fcfcfc;
+        }
+
+        /* LOGO SKELETON */
+        .logo-placeholder {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        /* PAYMENT BLOCK */
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .payment-box {
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .payment-row {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            gap: 12px;
+            transition: 0.2s;
+        }
+
+        .payment-row:last-child {
+            border-bottom: none;
+        }
+
+        .payment-row.active {
+            background: #f0faff;
+        }
+
+        .payment-row.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #fafafa;
+        }
+
+        .payment-row.disabled .radio-circle {
+            background: #e6e6e6;
+        }
+
+        .radio-circle {
+            width: 18px;
+            height: 18px;
+            border: 1px solid #dcdfe6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .payment-row.active .radio-circle {
+            border-color: var(--primary-color);
+            border-width: 5px;
+        }
+
+        .payment-label {
+            font-size: 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tooltip-subtext {
+            font-size: 11px;
+            color: #ff4d4f;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        .brand-logos {
+            display: flex;
+            gap: 8px;
+        }
+
+        .brand-logos img {
+            height: 18px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* CC FORM */
+        .cc-form {
+            background: #fafafa;
+            padding: 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-submit {
+            height: 56px;
+            background: var(--primary-color);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            border-radius: 5px;
+            margin-top: 24px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        /* MODAL OVERLAY (INSIDE MOBILE FRAME) */
+        .mate-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            flex-direction: column;
+            padding: 24px;
+            z-index: 20000;
+        }
+
+        .mate-modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .mate-instruction-arrow {
+            position: absolute;
+            top: 40px;
+            right: 20px;
+            width: 80px;
+            height: 90px;
+            z-index: 20001;
+        }
+
+        .mate-instruction-container {
+            margin-top: 130px;
+            color: #fff;
+            font-size: 15px;
+            line-height: 1.5;
+            z-index: 20001;
+        }
+
+        .mate-instruction-title {
+            margin-bottom: 24px;
+        }
+
+        .mate-instruction-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 4px;
+        }
+
+        .inline-dots-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border-radius: 4px;
+            width: 24px;
+            height: 18px;
+            vertical-align: middle;
+            margin: 0 4px;
+        }
+
+        .external-browser-btn {
+            background: #fff;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            padding: 16px;
+            font-size: 15px;
+            font-weight: 500;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 24px;
+            cursor: pointer;
+        }
+
+        /* PRD PANEL */
+        .prd-container {
+            width: var(--prd-w);
+            height: 100%;
+            background: #fff;
+            border-left: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .prd-header {
+            padding: 16px 20px;
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: 600;
+            background: #fff;
+        }
+
+        .prd-body {
+            padding: 24px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Modal removed from root level, moved into mobile-device-frame -->
+
+    <nav class="global-nav">
+        <div class="nav-extra-trigger" onclick="alert('见侧边栏详细规则')">需求说明</div>
+        <div class="nav-label">电子钱包全链路原型：</div>
+        <div class="nav-tabs">
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-概览.html'">1. 收款方式概览</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-ApplePay配置.html'">2. ApplePay配置</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-GooglePay配置.html'">2.1 GooglePay配置</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-商品详情预授权.html'">3. 快捷支付按钮</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-常规结账.html'">4. 结账页(常规)</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-授权结账.html'">5. 结账页(已授权)</button>
+            <button class="nav-tab-item active" onclick="location.href='Useepay电子钱包-安卓MATE浏览器(GP).html'">6. 安卓MATE环境(GP)</button>
+        </div>
+    </nav>
+
+    <div class="layout-wrapper">
+        <div class="prototype-container">
+            <div class="mobile-device-frame">
+                <!-- 弹窗 (Overlay placed perfectly inside the simulated mobile frame) -->
+                <div class="mate-modal-overlay" id="mateModal">
+                    <svg class="mate-instruction-arrow" viewBox="0 0 100 100" fill="none" stroke="#fff"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10,90 C40,90 70,70 60,40 C50,10 30,30 40,50 C50,70 80,60 90,20"></path>
+                        <path d="M70,20 L90,20 L80,35"></path>
+                    </svg>
+
+                    <div class="mate-instruction-container">
+                        <div class="mate-instruction-title">Google Pay is unavailable in the current browser.</div>
+
+                        <div class="mate-instruction-step">
+                            <span>1.</span>
+                            <span>Click the button "<span class="inline-dots-icon"><svg viewBox="0 0 24 24" width="16"
+                                        height="16" fill="#333">
+                                        <circle cx="5" cy="12" r="2" />
+                                        <circle cx="12" cy="12" r="2" />
+                                        <circle cx="19" cy="12" r="2" />
+                                    </svg></span>" in the upper right.</span>
+                        </div>
+
+                        <div class="mate-instruction-step">
+                            <span>2.</span>
+                            <span>Click "Open links in external browser" to continue payment with supported
+                                browser.</span>
+                        </div>
+
+                        <button class="external-browser-btn"
+                            onclick="document.getElementById('mateModal').classList.remove('active')">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#333" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path
+                                    d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                                </path>
+                            </svg>
+                            Open links in external browser
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Status Bar -->
+                <div class="mobile-status-bar">
+                    <span>12:00</span>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#000">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v2z" />
+                        </svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#000">
+                            <path
+                                d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- MATE Browser Header simulating FB/Instagram -->
+                <div class="mate-browser-header">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="#333">
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                    </svg>
+                    <span style="display:flex; flex-direction:column; align-items:center; line-height:1.2;">
+                        <span style="font-size:13px; font-weight:600;">demostore.com</span>
+                        <span style="font-size:11px; color:#666;">Viewable by you</span>
+                    </span>
+                    <!-- 3-dot menu matching PRD interaction -->
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="#333">
+                        <path
+                            d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                    </svg>
+                </div>
+
+                <div class="checkout-mobile-content">
+                    <!-- Collapse Cart Mobile -->
+                    <div
+                        style="display:flex;justify-content:space-between;align-items:center;padding:16px;background:#fafafa;border:1px solid #e5e5e5;border-radius:4px;margin-bottom:24px;">
+                        <span style="color:#00848e;font-size:14px;display:flex;align-items:center;gap:4px;">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                <path
+                                    d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+                            </svg>
+                            Show order summary
+                        </span>
+                        <span style="font-size:16px;font-weight:600;">$ 199.00</span>
+                    </div>
+
+                    <div class="logo-placeholder">
+                        <div class="skeleton" style="width: 120px; height: 32px; margin: 0 auto;"></div>
+                    </div>
+
+                    <!-- EXPRESS CHECKOUT SECTION (In MATE Browser) -->
+                    <div class="express-checkout-block" style="margin-bottom: 32px;">
+                        <div class="express-divider">Express Checkout</div>
+                        <button class="btn-google-pay"
+                            onclick="document.getElementById('mateModal').classList.add('active'); console.log('Event Sent: express_checkout_initiated (browser=fb_inapp)');">
+                            <span style="font-weight:bold; letter-spacing:-0.5px; font-size:18px;"><span
+                                    style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span
+                                    style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span
+                                    style="color:#34A853">l</span><span style="color:#EA4335">e</span> Pay</span>
+                        </button>
+                        <div style="font-size:11px; color:#999; margin-top:12px; text-align:center;">模拟安卓环境下
+                            Facebook/Instagram 内置浏览器打开了结账页</div>
+                    </div>
+
+                    <div class="section-title">Payment method</div>
+                    <p style="font-size:12px; color:#999; margin-bottom:12px;">All transactions are secure and
+                        encrypted.</p>
+
+                    <div class="payment-box" style="background: #fff;">
+                        <!-- PayPal -->
+                        <div class="payment-row">
+                            <div class="radio-circle"></div>
+                            <div class="payment-label">
+                                <span style="font-weight: 800; font-style: italic; font-size: 16px;"><span
+                                        style="color:#003087;">Pay</span><span style="color:#0079C1;">Pal</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Klarna -->
+                        <div class="payment-row">
+                            <div class="radio-circle"></div>
+                            <div class="payment-label">Klarna</div>
+                            <div class="brand-logos">
+                                <span
+                                    style="background:#ffb3c7; color:#0a0a0a; font-weight:900; padding:2px 6px; font-size:12px; border-radius:2px;">Klarna.</span>
+                            </div>
+                        </div>
+
+                        <!-- giropay (ACTIVE) -->
+                        <div class="payment-row active" style="background: #fff; border-bottom: none;">
+                            <div class="radio-circle"></div>
+                            <div class="payment-label">giropay</div>
+                            <div class="brand-logos">
+                                <span
+                                    style="border:1px solid #1c325c; color:#1c325c; font-weight:800; padding:0 4px; font-size:11px; border-radius:4px; display:flex; align-items:center;">
+                                    <span style="color:#d40026; margin-right:1px;">giro</span><span
+                                        style="color:#1c325c; background:#1c325c; border-radius:2px; padding:1px 2px; margin-left:2px;"><span
+                                            style="color:#fff;">pay</span></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="cc-form"
+                            style="background: #f1f1f1; padding: 40px 24px 32px; display: flex; flex-direction: column; align-items: center; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                            <!-- Simulated graphic -->
+                            <svg viewBox="0 0 100 60" width="100" height="60" style="margin-bottom: 16px;" fill="none"
+                                stroke="#a0a0a0" stroke-width="2">
+                                <rect x="10" y="10" width="60" height="40" rx="3" />
+                                <path d="M10 20 H 70 M 60 30 h 30 M 80 20 l 10 10 l -10 10" />
+                                <circle cx="20" cy="15" r="1.5" fill="#a0a0a0" stroke="none" />
+                                <circle cx="28" cy="15" r="1.5" fill="#a0a0a0" stroke="none" />
+                                <circle cx="36" cy="15" r="1.5" fill="#a0a0a0" stroke="none" />
+                            </svg>
+                            <div
+                                style="font-size: 14px; color: #444; text-align: center; max-width: 400px; line-height: 1.6;">
+                                After clicking "Complete Order", you will be redirected to giropay to complete your
+                                purchase securely
+                            </div>
+                        </div>
+
+                        <!-- GOOGLE PAY (DISABLED IN MATE) -->
+                        <div class="payment-row disabled"
+                            style="background: #fff; opacity: 1; border-top: none; position: relative;">
+                            <div class="radio-circle" style="opacity: 0.3; background: #e0e0e0;"></div>
+                            <div class="payment-label"
+                                style="display: flex; flex-direction: row; align-items: center; gap: 8px; color: #a9a9a9;">
+                                Google Pay
+                                <div
+                                    style="width:16px; height:16px; border:1px solid #a9a9a9; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; cursor: pointer;">
+                                    i</div>
+
+                                <!-- Tooltip (Statically shown to emulate hover) -->
+                                <div
+                                    style="position: absolute; bottom: 44px; left: 28px; background: #4a4a4a; color: #fff; padding: 12px 14px; border-radius: 4px; font-size: 13px; max-width: 260px; z-index: 10; line-height: 1.5; font-weight: normal; letter-spacing: 0.1px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                                    Google Pay is available in Google Chrome, Mozilla Firefox, Apple Safari, Microsoft
+                                    Edge, Opera, or UC.
+                                    <div
+                                        style="position: absolute; bottom: -6px; left: 80px; width: 12px; height: 12px; background: #4a4a4a; transform: rotate(45deg);">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="brand-logos" style="opacity: 1;">
+                                <div
+                                    style="border:1px solid #e1e1e1; padding: 3px 8px; border-radius: 4px; background: #fff; display: flex; align-items: center; justify-content: center;">
+                                    <span
+                                        style="font-weight:bold; letter-spacing:-0.5px; font-size:15px; display:flex; align-items:center; line-height:1;"><span
+                                            style="color:#4285F4">G</span><span
+                                            style="margin-left:4px; color:#5f6368; font-size: 13px;">Pay</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BILLING ADDRESS SKELETON -->
+                    <div class="skeleton" style="height: 100px; margin-top: 32px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="prd-container">
+            <div class="prd-header">交互细则：安卓 MATE 浏览器环境</div>
+            <div class="prd-body">
+                <p>由于安卓设备自带的部分应用内环境（如 Facebook, Instagram 内置浏览器等 MATE 系浏览器）无法顺利拉起外部原生钱包 SDK，需在此环境下进行特殊的体验降级和指引。</p>
+
+                <p style="margin-top:20px;"><strong>1. 快捷支付按钮（Express Checkout）：</strong></p>
+                <ul style="margin-left: 16px; margin-top: 8px;">
+                    <li>探测到用户处于安卓 MATE 系统内时，系统会拦截位于顶部的 Google Pay 快捷支付点击动作，不发起真实授权。</li>
+                    <li>界面将出现黑色半透明 <b>蒙版引导</b>（Overlay），带有手绘指向箭头的动画，直接指向原宿浏览器右上角的【更多】按钮。</li>
+                    <li>通过分步文案，指导用户点击浏览器自带的菜单栏（`...`图标），然后选择“在外部浏览器打开（Open links in external browser）”。</li>
+                    <li>界面还需配有一个包含“地球图标”的操作按钮，以进一步增加对外部浏览器的隐喻提示。</li>
+                </ul>
+
+                <p style="margin-top:20px;"><strong>2. 常规支付选项（Payment Method）：</strong></p>
+                <ul style="margin-left: 16px; margin-top: 8px;">
+                    <li>如果客户跳过了上方快捷支付到了结账步的普通表单里：</li>
+                    <li>探测到安卓 MATE 内置浏览器时，需将 <b>Google Pay</b> 置灰变为不可点击状态。</li>
+                    <li>将其排序强制<b>置到底部</b>（排在信用卡、Paypal等之后）。</li>
+                    <li>在 Google Pay 名称右侧增加 <b>ⓘ 提示图标</b>。由于当前环境不支持拉起钱包，页面需静态（或点击/悬停）展示深色 Tooltip 气泡：“Google Pay is
+                        available in Google Chrome, Mozilla Firefox, Apple Safari, Microsoft Edge, Opera, or UC.”</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

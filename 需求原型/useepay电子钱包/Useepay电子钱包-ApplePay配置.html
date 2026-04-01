@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需求原型：新增 Useepay 电子钱包 - Apple Pay 配置</title>
+    <style>
+        :root {
+            --primary-color: #4a68ff;
+            --sidebar-bg: #f7f9fa;
+            --header-bg: #ffffff;
+            --main-bg: #f5f7f9;
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --text-light: #999999;
+            --border-color: #ebeef5;
+            --card-bg: #ffffff;
+            --danger-color: #ff4d4f;
+            --success-color: #52c41a;
+            --prd-w: 320px;
+            --proto-w: 1600px;
+            --nav-height: 56px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--main-bg);
+            overflow: hidden;
+            margin: 0;
+            padding-top: var(--nav-height);
+        }
+
+        /* --- GLOBAL NAVIGATION --- */
+        .global-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: #d6d6d6;
+            border-bottom: 1px solid #c0c0c0;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 10000;
+        }
+
+        .nav-extra-trigger {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .nav-extra-trigger:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-label {
+            font-size: 14px;
+            color: #333;
+            margin-left: 24px;
+            margin-right: 12px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-tab-item {
+            height: 32px;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 4px;
+            border: none;
+            background: #ffffff;
+            color: #333;
+        }
+
+        .nav-tab-item.active {
+            background: #3e7dfb;
+            color: #ffffff;
+        }
+
+        .layout-wrapper {
+            display: flex;
+            width: 1920px;
+            height: calc(100vh - var(--nav-height));
+        }
+
+        .prototype-container {
+            width: var(--proto-w);
+            height: 100%;
+            background: #fff;
+            display: flex;
+            overflow: hidden;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .prd-container {
+            width: var(--prd-w);
+            height: 100%;
+            background: #fdfdfd;
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar {
+            width: 240px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .skeleton {
+            background: #f0f2f5;
+            background: linear-gradient(90deg, #f0f2f5 25%, #e6e8eb 37%, #f0f2f5 63%);
+            background-size: 400% 100%;
+            animation: skeleton-loading 1.4s ease infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0 50%;
+            }
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--main-bg);
+            overflow-y: auto;
+        }
+
+        .top-header {
+            height: 60px;
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 20px;
+        }
+
+        .config-content {
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .back-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .status-tag {
+            font-size: 11px;
+            font-weight: normal;
+            color: #389e0d;
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .config-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 32px 40px;
+            margin-bottom: 24px;
+        }
+
+        .brand-logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary-color);
+            font-style: italic;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .intro-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control.disabled {
+            background-color: #fafafa;
+            cursor: not-allowed;
+            color: #ccc;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .input-group select {
+            border: none;
+            height: 38px;
+            padding: 0 12px;
+            background: #fff;
+            font-size: 13px;
+            border-right: 1px solid var(--border-color);
+            outline: none;
+            min-width: 80px;
+        }
+
+        .input-group input {
+            border: none;
+            flex: 1;
+            height: 38px;
+            padding: 0 12px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .form-label.required::before {
+            content: "*";
+            color: var(--danger-color);
+            margin-right: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            height: 38px;
+            padding: 0 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 104, 255, 0.1);
+        }
+
+        .upload-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .file-upload-btn {
+            position: relative;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px 16px;
+            color: #333;
+            cursor: pointer;
+            font-size: 13px;
+            display: inline-block;
+        }
+
+        .file-upload-btn input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            height: 100%;
+        }
+
+        .upload-status {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: #fff;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .prd-header {
+            padding: 16px 20px;
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: 600;
+            background: #fff;
+        }
+
+        .prd-body {
+            padding: 24px;
+        }
+
+        .prd-section {
+            margin-bottom: 24px;
+        }
+
+        .prd-section h4 {
+            font-size: 14px;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .prd-section li {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.6;
+            list-style: none;
+            padding-left: 12px;
+            position: relative;
+        }
+
+        .prd-section li::after {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+        }
+
+        /* MODAL OVERLAY */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 20000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            width: 450px;
+            background: #fff;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 24px;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            padding: 12px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* TOOLTIP */
+        .tooltip-wrapper:hover .tooltip-content {
+            display: block !important;
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 激活切换提示防呆弹窗 -->
+    <div class="modal-overlay" id="switchModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div>更换收款方式</div>
+            </div>
+            <div class="modal-body">
+                请确认是否开启 <b>Apple Pay 钱包支付（通过 Useepay 接入）</b>，并且关闭其他渠道的 Apple Pay / Google Pay 支付？
+            </div>
+            <div class="modal-footer">
+                <button class="btn"
+                    onclick="document.getElementById('switchModal').classList.remove('active')">取消</button>
+                <button class="btn btn-primary" onclick="confirmActivation()">确认开启</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="global-nav">
+        <div class="nav-extra-trigger" onclick="alert('见侧边栏详细规则')">需求说明</div>
+        <div class="nav-label">电子钱包全链路原型：</div>
+        <div class="nav-tabs">
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-概览.html'">1. 收款方式概览</button>
+            <button class="nav-tab-item active" onclick="location.href='Useepay电子钱包-ApplePay配置.html'">2.
+                ApplePay配置</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-GooglePay配置.html'">2.1 GooglePay配置</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-商品详情预授权.html'">3. 快捷支付按钮</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-常规结账.html'">4. 结账页(常规)</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-授权结账.html'">5. 结账页(已授权)</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-安卓MATE浏览器(GP).html'">6.
+                安卓MATE环境(GP)</button>
+        </div>
+    </nav>
+
+    <div class="layout-wrapper">
+        <div class="prototype-container">
+            <div class="sidebar">
+                <div class="skeleton" style="height: 40px; margin-bottom: 20px;"></div>
+                <div class="skeleton" style="height: 24px; width: 60%;"></div>
+                <div class="skeleton" style="height: 24px; width: 80%;"></div>
+                <div class="skeleton" style="height: 24px; width: 70%;"></div>
+                <div style="flex:1"></div>
+                <div class="skeleton" style="height: 48px;"></div>
+            </div>
+
+            <div class="main-container">
+                <div class="top-header">
+                    <div class="skeleton" style="width: 120px; height: 24px;"></div>
+                    <div class="skeleton" style="width: 28px; height: 28px; border-radius: 50%;"></div>
+                </div>
+
+                <div class="config-content">
+                    <div class="page-header">
+                        <div class="back-btn" onclick="location.href='Useepay电子钱包-概览.html'">
+                            <svg viewBox="0 0 24 24" width="16" height="16">
+                                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                            </svg>
+                        </div>
+                        Apple Pay 钱包支付（通过 Useepay 接入） <span class="status-tag" id="statusTag"
+                            style="color: #999; background: #f5f5f5; border-color: #d9d9d9;">未激活</span>
+                    </div>
+
+                    <div class="config-card">
+                        <div class="brand-logo">
+                            <img src="../../payment_icon/apple_pay.png" style="height: 28px;" alt="Apple Pay"> Useepay
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">环境</label>
+                            <select class="form-control" onchange="onConfigChange()"
+                                style="background: #fff url('data:image/svg+xml,%3Csvg viewBox=%220 0 24 24%22 xmlns=%22http=%22http://www.w3.org/2000/svg%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22 fill=%22%23999%22 /%3E%3C/svg%3E') no-repeat right 8px center; background-size: 20px;">
+                                <option>Sandbox</option>
+                                <option selected>Live</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">域名验证 (Merchant ID Domain)</label>
+                            <div style="font-size:12px; color:#999;">请在Apple开发者后台下载域名验证文件并在此上传完成验证。该文件上传与其他配置项独立。</div>
+                            <div class="upload-row">
+                                <div class="file-upload-btn">
+                                    上传文件
+                                    <input type="file" accept=".txt" onchange="uploadMerchantDomain(this)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Mch No</label>
+                            <input type="text" id="mchNoInput" class="form-control" placeholder="请输入 Mch No"
+                                oninput="onConfigChange()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">App ID</label>
+                            <input type="text" class="form-control" placeholder="请输入 App ID" oninput="onConfigChange()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Publishable Key</label>
+                            <input type="text" class="form-control" placeholder="请输入 Publishable Key"
+                                oninput="onConfigChange()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Api Key</label>
+                            <input type="password" class="form-control" placeholder="请输入 Api Key "
+                                oninput="onConfigChange()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Apple Pay Merchant Id</label>
+                            <input type="text" class="form-control" placeholder="请输入 Apple Pay Merchant Id"
+                                oninput="onConfigChange()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Private Key Password</label>
+                            <input type="password" class="form-control" placeholder="请输入 Private Key Password"
+                                oninput="onConfigChange()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Private Key</label>
+                            <div class="upload-row">
+                                <div class="file-upload-btn">
+                                    <span id="btnPri">上传文件</span>
+                                    <input type="file" onchange="handleKeyUpload(this, 'btnPri', 'statusPri')">
+                                </div>
+                                <span class="upload-status" id="statusPri">未上传</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Public Key</label>
+                            <div class="upload-row">
+                                <div class="file-upload-btn">
+                                    <span id="btnPub">上传文件</span>
+                                    <input type="file" onchange="handleKeyUpload(this, 'btnPub', 'statusPub')">
+                                </div>
+                                <span class="upload-status" id="statusPub">未上传</span>
+                            </div>
+                        </div>
+
+                        <div class="card-actions" id="gatewayActions">
+                            <div style="flex:1"></div>
+                            <button class="btn btn-primary" onclick="activateGateway()">激活</button>
+                        </div>
+                    </div>
+
+                    <!-- SUPPORTED PAYMENT METHODS BLOCK (Only visible when active) -->
+                    <div class="config-card" id="paymentMethodCard" style="display: none; padding: 24px 32px;">
+                        <div class="title" style="margin-bottom: 8px;">支持支付方式</div>
+                        <div style="font-size: 13px; color: #666; margin-bottom: 16px;">顾客结账时，将会看到以下付款方式</div>
+
+                        <div style="margin-bottom: 24px;">
+                            <span
+                                style="display:inline-block; border:1px solid #e1e1e1; padding: 4px 12px; border-radius: 4px; background: #fff;">
+                                <img src="../../payment_icon/apple_pay.png"
+                                    style="height: 16px; vertical-align: middle;" alt="Apple Pay">
+                            </span>
+                        </div>
+
+                        <div
+                            style="border-top: 1px solid #ebeef5; padding-top: 20px; display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="quickPaySwitch" checked
+                                style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary-color);">
+                            <label for="quickPaySwitch"
+                                style="font-size: 14px; color: #333; cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none;">
+                                开启Apple Pay快捷支付
+                                <div class="tooltip-wrapper"
+                                    style="position: relative; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                                    <svg viewBox="0 0 24 24" width="15" height="15" fill="#999">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
+                                    </svg>
+                                    <div class="tooltip-content"
+                                        style="position: absolute; bottom: 24px; left: 50%; background: #333; color: #fff; padding: 16px; border-radius: 4px; font-size: 13px; width: 320px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); line-height: 1.5; z-index: 10;">
+                                        <div style="text-align: center; margin-bottom: 12px;">
+                                            <div
+                                                style="background: #000; display: inline-block; padding: 8px 48px; border-radius: 4px; border: 1px solid #fff;">
+                                                <span
+                                                    style="color: #fff; font-size: 16px; font-weight: bold; font-family: -apple-system, sans-serif;">
+                                                    Pay</span>
+                                            </div>
+                                        </div>
+                                        当顾客使用Apple Pay支持的浏览器访问商店时，Apple Pay快捷支付按钮将显示于商品详情页、购物车页和结账页。
+                                        <div
+                                            style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%) rotate(45deg); width: 12px; height: 12px; background: #333;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="prd-container">
+            <div class="prd-header">交互细则：Apple Pay 配置</div>
+            <div class="prd-body">
+                <div class="prd-section">
+                    <h4>1. 专属字段与常规交互</h4>
+                    <ul>
+                        <li>Apple Pay 必须输入 Merchant Id 和 私钥密码，并直接上传证书文件。</li>
+                        <li><b>激活冲突：</b>如果检测到 Google Pay 已开启，点击激活会弹出冲突提示并确认是否关闭另一个网关。</li>
+                    </ul>
+                </div>
+                <div class="prd-section">
+                    <h4>2. 域名验证 merchantid-domain</h4>
+                    <ul>
+                        <li>点击上传独立校验格式必须是 <code>.txt</code>，大小必须控制在 10KB 以下。</li>
+                        <li>上传无论成败皆有 Toast 提示，且该上传无需点击底部的“保存”按钮即可独立生效。</li>
+                    </ul>
+                </div>
+                <div class="prd-section">
+                    <h4>3. Private/Public Key 上传</h4>
+                    <ul>
+                        <li>大小校验 <= 10KB。</li>
+                        <li>未上传时显示“上传文件”按钮。</li>
+                        <li>已上传后按钮文字变为“重新上传”，并在右侧打上绿色的“已上传”标签。</li>
+                    </ul>
+                </div>
+                <div class="prd-section">
+                    <h4>4. 支持的支付方式及快捷支付</h4>
+                    <ul>
+                        <li>当支付网关为“已激活”时会显示该卡片，未激活时隐藏。</li>
+                        <li>下方展示静态的 Apple Pay 支付图标（不支持配置修改）。</li>
+                        <li>附带“开启Apple Pay快捷支付”开关及悬浮提示框。</li>
+                        <li>提示框内将展示标准 Apple Pay 深色按钮预览，并解释快捷支付将会在设备符合要求时显示于详情页、购物车页及结账页。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isGatewayActive = false;
+        let hasConfigChanges = false;
+
+        function updateGatewayUI() {
+            const actionContainer = document.getElementById('gatewayActions');
+            const statusTag = document.getElementById('statusTag');
+
+            statusTag.innerText = isGatewayActive ? '已激活' : '未激活';
+            statusTag.style.color = isGatewayActive ? '#389e0d' : '#999';
+            statusTag.style.background = isGatewayActive ? '#f6ffed' : '#f5f5f5';
+            statusTag.style.borderColor = isGatewayActive ? '#b7eb8f' : '#d9d9d9';
+
+            if (!isGatewayActive) {
+                actionContainer.innerHTML = '<div style="flex:1"></div><button class="btn btn-primary" onclick="activateGateway()">激活</button>';
+                document.getElementById('paymentMethodCard').style.display = 'none';
+                hasConfigChanges = false;
+            } else {
+                document.getElementById('paymentMethodCard').style.display = 'block';
+                if (!hasConfigChanges) {
+                    actionContainer.innerHTML = '<button class="btn" onclick="deactivateGateway()" style="color:#ff4d4f; border-color:#ff4d4f;">停用</button><div style="flex:1"></div>';
+                } else {
+                    actionContainer.innerHTML = '<button class="btn" onclick="deactivateGateway()" style="color:#ff4d4f; border-color:#ff4d4f;">停用</button><div style="flex:1"></div><button class="btn btn-primary" onclick="saveGateway()">保存</button>';
+                }
+            }
+        }
+
+        function activateGateway() {
+            // Check validation
+            const mchNo = document.getElementById('mchNoInput').value;
+            if (!mchNo) {
+                showToast('激活失败：请输入 Mch No', 'error');
+                return;
+            }
+            // Show fake clash modal
+            document.getElementById('switchModal').classList.add('active');
+        }
+
+        function confirmActivation() {
+            document.getElementById('switchModal').classList.remove('active');
+            isGatewayActive = true;
+            showToast('已激活并关闭了其他有冲突的钱包渠道', 'success');
+            updateGatewayUI();
+        }
+
+        function deactivateGateway() {
+            isGatewayActive = false;
+            showToast('停用成功', 'success');
+            updateGatewayUI();
+        }
+
+        function saveGateway() {
+            const mchNo = document.getElementById('mchNoInput').value;
+            if (!mchNo) {
+                showToast('保存失败：请输入 Mch No', 'error');
+                return;
+            }
+            hasConfigChanges = false;
+            showToast('更新成功', 'success');
+            updateGatewayUI();
+        }
+
+        function onConfigChange() {
+            if (isGatewayActive) {
+                hasConfigChanges = true;
+                updateGatewayUI();
+            }
+        }
+
+        // Domain txt upload
+        function uploadMerchantDomain(input) {
+            if (!input.files.length) return;
+            const file = input.files[0];
+            if (!file.name.endsWith('.txt')) {
+                showToast('上传失败，仅支持上传.txt格式文件', 'error');
+                input.value = '';
+                return;
+            }
+            if (file.size > 10 * 1024) {
+                showToast('上传失败，文件最大不超过10kb', 'error');
+                input.value = '';
+                return;
+            }
+            showToast('上传成功，请及时到苹果开发者后台进行merchantid-domain验证', 'success');
+        }
+
+        // Keys upload
+        function handleKeyUpload(input, btnId, statusId) {
+            if (!input.files.length) return;
+            const file = input.files[0];
+            if (file.size > 10 * 1024) {
+                showToast('上传失败，文件最大不超过10kb', 'error');
+                input.value = '';
+                return;
+            }
+            document.getElementById(btnId).innerText = '重新上传';
+            document.getElementById(statusId).innerText = '已上传';
+            document.getElementById(statusId).style.color = '#52c41a';
+            onConfigChange();
+        }
+
+        // Toast
+        function showToast(msg, type) {
+            const toast = document.createElement('div');
+            toast.style.position = 'fixed';
+            toast.style.top = '24px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.padding = '10px 24px';
+            toast.style.background = '#fff';
+            toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            toast.style.borderRadius = '4px';
+            toast.style.zIndex = '99999';
+            toast.style.display = 'flex';
+            toast.style.alignItems = 'center';
+            toast.style.gap = '8px';
+            toast.style.fontSize = '14px';
+
+            if (type === 'error') {
+                toast.innerHTML = `<svg width="16" height="16" fill="#ff4d4f" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v2z"/></svg> <span>${msg}</span>`;
+            } else {
+                toast.innerHTML = `<svg width="16" height="16" fill="#52c41a" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> <span>${msg}</span>`;
+            }
+
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', updateGatewayUI);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAAS项目 原型管理中心</title>
+    <style>
+        :root {
+            --primary-color: #1677ff;
+            --primary-bg: #e6f4ff;
+            --bg-color: #f5f7fa;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --text-main: #333;
+            --text-secondary: #666;
+            --text-light: #999;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+        header { margin-bottom: 40px; border-bottom: 1px solid #dfe3e8; padding-bottom: 20px; }
+        h1 { font-size: 28px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; }
+        .subtitle { color: var(--text-secondary); font-size: 14px; }
+
+        section { margin-bottom: 48px; }
+        .section-header {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+        }
+        .section-header h2 { font-size: 18px; font-weight: 600; position: relative; padding-left: 12px; }
+        .section-header h2::before {
+            content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+            width: 4px; height: 16px; background: var(--primary-color); border-radius: 2px;
+        }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+        .card {
+            background: #fff; border-radius: 12px; padding: 24px; border: 1px solid #f0f0f0;
+            box-shadow: var(--card-shadow); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none; color: inherit; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; height: 100%;
+        }
+        .card:hover { transform: translateY(-5px); border-color: var(--primary-color); box-shadow: 0 8px 24px rgba(22, 119, 255, 0.1); }
+        .card::after {
+            content: '查看原型 →'; position: absolute; right: 24px; bottom: 24px; font-size: 12px;
+            color: var(--primary-color); font-weight: 600; opacity: 0; transform: translateX(-10px); transition: 0.3s;
+        }
+        .card:hover::after { opacity: 1; transform: translateX(0); }
+
+        .tag {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+            background: var(--primary-bg); color: var(--primary-color);
+            padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 12px; font-weight: 600;
+        }
+        .tag-req { background: #fff7e6; color: #faad14; }
+
+        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; }
+        .card-desc { font-size: 13px; color: var(--text-secondary); flex: 1; margin-bottom: 16px; }
+        
+        .footer { text-align: center; color: var(--text-light); font-size: 12px; margin-top: 80px; }
+
+        /* Badge for new items */
+        .new-badge { position: absolute; top: 12px; right: 12px; background: #52c41a; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px;}
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>SAAS项目 原型导航</h1>
+            <p class="subtitle">统一演示入口 • 2026 Q1 产品定义</p>
+        </header>
+
+        <!-- Specific Requirements Section -->
+        <section>
+            <div class="section-header">
+                <h2>最新需求原型 (Requirement Prototypes)</h2>
+            </div>
+            <div class="grid">
+                <a href="需求原型/商品模板管理弹窗.html" class="card">
+                    <div class="tag tag-req">PRD-003</div>
+                    <div class="new-badge">NEW</div>
+                    <div class="card-title">商品详情页模板管理</div>
+                    <div class="card-desc">解决子菜单过多问题，改为弹窗式管理，支持页内搜索、分页及系统模板保护。</div>
+                </a>
+                <a href="需求原型/商品限购.html" class="card">
+                    <div class="tag tag-req">PRD-002</div>
+                    <div class="card-title">商品限购规则</div>
+                    <div class="card-desc">在商品编辑页增加购买数量限制（起购/限购），包含异常校验与 PRD 快速查看抽屉。</div>
+                </a>
+                <a href="需求原型/Useepay概览.html" class="card">
+                    <div class="tag tag-req">PRD-004-1</div>
+                    <div class="new-badge">NEW</div>
+                    <div class="card-title">Useepay 概览与入口</div>
+                    <div class="card-desc">演示收款概览页中的“信用卡支付”区块，以及“添加支付渠道”搜索弹窗的交互流程。</div>
+                </a>
+                <a href="需求原型/Useepay配置.html" class="card">
+                    <div class="tag tag-req">PRD-004-2</div>
+                    <div class="new-badge">NEW</div>
+                    <div class="card-title">Useepay 详情配置</div>
+                    <div class="card-desc">新增 Useepay 渠道配置，采用骨架屏降噪设计，提供完整的业务参数管理功能。</div>
+                </a>
+                <a href="需求原型/Useepay结账.html" class="card">
+                    <div class="tag tag-req">PRD-004-3</div>
+                    <div class="new-badge">NEW</div>
+                    <div class="card-title">Useepay 商城结账页</div>
+                    <div class="card-desc">演示在总结阶段的信用卡表单交互，包括图标动态展示与 Luhn 算法校验。</div>
+                </a>
+                <a href="需求原型/自定义Html可视化编辑.html" class="card">
+                    <div class="tag tag-req">PRD-005-1</div>
+                    <div class="new-badge">NEW</div>
+                    <div class="card-title">自定义 HTML 可视化编辑 - 主题编辑器</div>
+                    <div class="card-desc">在主题编辑器中展示自定义 HTML 模块的配置面板，支持源码编辑并可一键进入可视化编辑模式。</div>
+                </a>
+                <a href="需求原型/可视化编辑器.html" class="card">
+                    <div class="tag tag-req">PRD-005-2</div>
+                    <div class="new-badge">NEW</div>
+                    <div class="card-title">可视化编辑器（独立页面）</div>
+                    <div class="card-desc">独立沉浸式可视化编辑器，支持点击文字/图片实时替换，设备预览切换，编辑记录追踪。</div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Functional Modules Section -->
+        <section>
+            <div class="section-header">
+                <h2>功能模块原型 (Functional Modules)</h2>
+            </div>
+            <div class="grid">
+                <a href="功能原型/settings_payment.html" class="card">
+                    <div class="tag">SETTINGS</div>
+                    <div class="card-title">收款方式概览</div>
+                    <div class="card-desc">管理网关授权、支付渠道状态及信用卡图标库。</div>
+                </a>
+                <a href="功能原型/settings_payment_config.html" class="card">
+                    <div class="tag">SETTINGS</div>
+                    <div class="card-title">支付详情配置 (Antom)</div>
+                    <div class="card-desc">支付渠道的环境切换、状态管理及带有表单校验报错的参数设置。</div>
+                </a>
+                <a href="功能原型/theme_editor.html" class="card">
+                    <div class="tag">DESIGN</div>
+                    <div class="card-title">主题编辑器</div>
+                    <div class="card-desc">全屏沉浸式页面编辑中心，支持顶部导航切换、左侧模块排布及右侧属性配置。</div>
+                </a>
+                <a href="功能原型/product_list.html" class="card">
+                    <div class="tag">PRODUCT</div>
+                    <div class="card-title">商品列表</div>
+                    <div class="card-desc">标准的商品列表管理页，集成统一侧边栏。</div>
+                </a>
+                <a href="功能原型/order_list.html" class="card">
+                    <div class="tag">ORDER</div>
+                    <div class="card-title">管理订单</div>
+                    <div class="card-desc">多维度筛选的订单管理中心。</div>
+                </a>
+                <a href="功能原型/settings.html" class="card">
+                    <div class="tag">SETTINGS</div>
+                    <div class="card-title">基础设置中心</div>
+                    <div class="card-desc">入口聚合页面，包含公司信息、偏好设置等。</div>
+                </a>
+            </div>
+        </section>
+
+        <div class="footer">
+            &copy; 2026 SAAS Prototype Center. Built with Antigravity.
+        </div>
+    </div>
+
+</body>
+</html>

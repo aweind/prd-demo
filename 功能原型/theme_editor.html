@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主题编辑器 - 原型</title>
+    <style>
+        :root {
+            --primary-color: #1677ff;
+            --primary-hover: #4096ff;
+            --header-h: 56px;
+            --left-w: 260px;
+            --right-w: 320px;
+            --bg-color: #f0f2f5;
+            --border-color: #f0f0f0;
+            --text-main: #333;
+            --text-secondary: #666;
+            --text-light: #999;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-color);
+        }
+
+        /* ----- TOP HEADER ----- */
+        .editor-header {
+            height: var(--header-h);
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .exit-btn {
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; border-radius: 4px;
+            color: var(--text-secondary);
+        }
+        .exit-btn:hover { background: var(--bg-color); }
+        .exit-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+        .page-selector {
+            position: relative;
+        }
+        .selector-value {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 12px; border: 1px solid var(--border-color);
+            border-radius: 4px; font-size: 14px; cursor: pointer;
+            transition: 0.2s;
+        }
+        .selector-value:hover { border-color: var(--primary-color); }
+        .selector-value svg { width: 12px; height: 12px; fill: var(--text-secondary); }
+
+        .selector-dropdown {
+            position: absolute; top: calc(100% + 4px); left: 0;
+            background: #fff; border: 1px solid var(--border-color);
+            border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 200px; padding: 4px 0;
+        }
+        .dropdown-item {
+            padding: 8px 16px; font-size: 13px; color: var(--text-main);
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer;
+        }
+        .dropdown-item:hover { background: #f5f5f5; }
+        .dropdown-item.active { background: #e6f4ff; color: var(--primary-color); }
+        .dropdown-item.active svg { fill: var(--primary-color); }
+        
+        .submenu-panel {
+            position: absolute; top: -1px; left: 100%;
+            background: #fff; border: 1px solid var(--border-color);
+            border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 240px; display: flex; flex-direction: column;
+            min-height: 100%;
+        }
+        .submenu-search { padding: 12px; border-bottom: 1px solid var(--border-color); }
+        .search-input {
+            width: 100%; padding: 6px 10px 6px 28px; border: 1px solid var(--border-color);
+            border-radius: 4px; font-size: 12px; outline: none;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="%23ccc"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>') no-repeat 8px center;
+            background-size: 14px;
+        }
+        .template-list { max-height: 250px; overflow-y: auto; padding: 4px 0; }
+        .t-item {
+            padding: 8px 16px; font-size: 13px; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .t-item:hover { background: #f5f5f5; }
+        .t-item.active { color: var(--primary-color); font-weight: 500; }
+        .t-actions { display: flex; gap: 8px; opacity: 0; }
+        .t-item:hover .t-actions { opacity: 1; }
+        .t-actions svg { width: 12px; height: 12px; fill: var(--primary-color); }
+        .submenu-footer { padding: 12px; border-top: 1px solid var(--border-color); }
+
+        .header-center { display: flex; align-items: center; gap: 16px; }
+        .view-toggle { display: flex; align-items: center; gap: 12px; }
+        .view-btn {
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-light); transition: 0.2s; position: relative;
+        }
+        .view-btn:hover { color: var(--text-main); }
+        .view-btn.active { color: var(--primary-color); }
+        .view-btn.active::after {
+            content: ''; position: absolute; bottom: 0; left: 4px; right: 4px;
+            height: 2px; background: var(--primary-color);
+        }
+        .view-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .history-btn { color: var(--primary-color); display: flex; align-items: center; cursor: pointer; }
+        .history-btn svg { width: 18px; height: 18px; fill: currentColor; }
+        .header-sep { width: 1px; height: 14px; background: var(--border-color); }
+        .btn { padding: 6px 16px; border-radius: 4px; font-size: 14px; cursor: pointer; border: 1px solid transparent; }
+        .btn-disabled { background: #f5f5f5; color: #b8b8b8; border-color: #d9d9d9; cursor: not-allowed; }
+        .btn-primary { background: var(--primary-color); color: #fff; border-color: var(--primary-color); width: 100%;}
+        .btn-primary:active { background: var(--primary-hover); border-color: var(--primary-hover); }
+
+        /* ----- EDITOR BODY ----- */
+        .editor-body {
+            flex: 1; display: flex; overflow: hidden;
+        }
+
+        /* LEFT PANEL */
+        .left-panel {
+            width: var(--left-w); background: #fff; border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; z-index: 10;
+        }
+        .panel-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
+        .panel-tab {
+            flex: 1; text-align: center; padding: 12px 0; font-size: 14px; cursor: pointer;
+            color: var(--text-main); position: relative;
+        }
+        .panel-tab.active { color: var(--primary-color); font-weight: 500; }
+        .panel-tab.active::after {
+            content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
+            height: 2px; background: var(--primary-color);
+        }
+
+        .module-list { padding: 16px 0; flex: 1; overflow-y: auto; }
+        .m-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 24px;
+            font-size: 13px; color: var(--text-main); cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+        .m-item:hover { background: #fafafa; }
+        .m-item.active { border-left-color: var(--primary-color); background: #e6f4ff; color: var(--primary-color); }
+        .m-item svg { width: 16px; height: 16px; fill: currentColor; }
+        
+        .add-module-wrap { padding: 12px 24px; display: flex; justify-content: center; }
+        .add-module-btn {
+            color: var(--primary-color); font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer;
+        }
+
+        /* CENTER CANVAS */
+        .center-canvas {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            overflow-y: auto; padding: 24px; position: relative;
+        }
+        .preview-frame {
+            width: 1000px; min-height: 800px; background: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform-origin: top center;
+        }
+        
+        /* Preview Frame Content Mockup */
+        .mock-banner {
+            background: #000; color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 12px 40px;
+        }
+        .mock-banner-title { font-size: 32px; font-weight: bold; letter-spacing: 2px; }
+        .mock-timer { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 14px;}
+        .timer-box { background: #fff; color: #000; padding: 8px; font-size: 40px; line-height: 1; font-weight: normal; font-family: 'Courier New', Courier, monospace; }
+        
+        .mock-hero {
+            padding: 40px; display: flex; align-items: center; justify-content: center; gap: 40px;
+        }
+        .mock-buy-btn {
+            background: #d30000; color: #fff; font-size: 36px; font-weight: bold;
+            padding: 16px 40px; border-radius: 4px; letter-spacing: 1px;
+        }
+        .mock-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 0 40px 40px 40px;
+        }
+        .mock-img-placeholder {
+            background: #e2e2e2; width: 100%; padding-top: 100%; position: relative;
+        }
+        .mock-img-placeholder::after {
+            content: "Product Image\A(Tactical Pants)"; white-space: pre-wrap;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: #999; font-size: 20px; text-align: center; font-weight: bold;
+        }
+
+        /* RIGHT PANEL */
+        .right-panel {
+            width: var(--right-w); background: #fff; border-left: 1px solid var(--border-color);
+            display: flex; flex-direction: column; overflow-y: auto;
+        }
+        .setting-section { border-bottom: 1px solid var(--border-color); }
+        .section-header {
+            padding: 16px; font-size: 14px; font-weight: 600; color: var(--text-main);
+            display: flex; justify-content: space-between; align-items: center; background: #fafafa;
+        }
+        .section-header svg { width: 14px; height: 14px; fill: var(--primary-color); cursor: pointer; }
+        
+        .section-content { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+        
+        .s-checkbox { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-main); cursor: pointer; }
+        .s-checkbox input[type="checkbox"] { accent-color: var(--primary-color); width: 14px; height: 14px; cursor: pointer; margin-top:-1px;}
+        
+        .s-group { display: flex; flex-direction: column; gap: 8px; }
+        .s-label { font-size: 12px; color: var(--text-secondary); }
+        .s-select { 
+            width: 100%; border: 1px solid var(--border-color); border-radius: 4px;
+            padding: 6px 12px; font-size: 13px; color: var(--text-main); outline: none;
+            appearance: none; background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="%23ccc"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 4px center;
+        }
+        .s-select:focus { border-color: var(--primary-color); }
+        
+        /* Custom Slider */
+        .s-slider-container { display: flex; align-items: center; width: 100%; gap: 12px; margin-top: 8px; }
+        .s-slider { flex: 1; -webkit-appearance: none; height: 4px; border-radius: 2px; background: #e8e8e8; outline: none; }
+        .s-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 14px; height: 14px; border-radius: 50%; background: var(--primary-color);
+            cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--primary-color);
+        }
+
+        .draggable-list {
+            border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .drag-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 12px; border-bottom: 1px solid var(--border-color);
+            background: #fff; cursor: move;
+        }
+        .drag-item:last-child { border-bottom: none; }
+        .drag-left { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-main); }
+        .drag-left svg { fill: #ccc; width: 14px; height: 14px; }
+        .drag-right svg { fill: #ccc; width: 16px; height: 16px; cursor: pointer; }
+
+        .add-ann-btn {
+            background: none; border: none; color: var(--primary-color); text-align: center;
+            font-size: 13px; cursor: pointer; padding: 8px 0; width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- TOP HEADER -->
+    <div class="editor-header">
+        <div class="header-left">
+            <div class="exit-btn">
+                <svg viewBox="0 0 24 24"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+            </div>
+            
+            <div class="page-selector">
+                <!-- Clicked state represented for prototype -->
+                <div class="selector-value" style="border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-color: #d9d9d9; border-bottom-color: transparent; box-shadow: 0 -2px 5px rgba(0,0,0,0.02); z-index: 10; position:relative; background:#fff;">
+                    商品详情页 
+                    <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                </div>
+                
+                <!-- Expanded Dropdown Simulation -->
+                <div class="selector-dropdown" style="border-top-left-radius: 0;">
+                    <div class="dropdown-item">异常页</div>
+                    <div class="dropdown-item">首页</div>
+                    <div class="dropdown-item">商品列表页</div>
+                    <div class="dropdown-item">分类页</div>
+                    
+                    <div class="dropdown-item active">
+                        商品详情页
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                    </div>
+                    
+                    <div class="dropdown-item">博客专辑</div>
+                    <div class="dropdown-item">博客详情页</div>
+                    <div class="dropdown-item">购物车页</div>
+                    
+                    <!-- Nested Submenu -->
+                    <div class="submenu-panel">
+                        <div class="submenu-search">
+                            <input type="text" class="search-input" placeholder="输入模板名称搜索">
+                        </div>
+                        <div class="template-list">
+                            <div class="t-item active">默认商品详情页模板</div>
+                            <div class="t-item">
+                                品牌商品详情模板
+                                <div class="t-actions">
+                                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.12-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                </div>
+                            </div>
+                            <div class="t-item">
+                                白货商品详情模板1
+                                <div class="t-actions">
+                                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.12-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                </div>
+                            </div>
+                            <div class="t-item">
+                                白货商品详情模板2
+                                <div class="t-actions">
+                                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.12-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="submenu-footer">
+                            <button class="btn btn-primary">新建商品详情模板</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-center">
+            <div class="view-toggle">
+                <div class="view-btn"><svg viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg></div>
+                <div class="view-btn active"><svg viewBox="0 0 24 24"><path d="M21 2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7l-2 3v1h8v-1l-2-3h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H3V4h18v12z"/></svg></div>
+                <div class="view-btn"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></div>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="history-btn">
+                <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+            </div>
+            <div class="header-sep"></div>
+            <button class="btn btn-disabled">保存</button>
+        </div>
+    </div>
+
+    <!-- MAIN BODY -->
+    <div class="editor-body">
+        
+        <!-- LEFT SIDEBAR -->
+        <div class="left-panel">
+            <div class="panel-tabs">
+                <div class="panel-tab active">页面模块</div>
+                <div class="panel-tab">全局设置</div>
+            </div>
+            
+            <div class="module-list">
+                <div class="m-item">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14H5z"/><path d="M7 7h10v10H7z" opacity=".3"/></svg>
+                    弹窗
+                </div>
+                <div class="m-item active">
+                    <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zm-2-7H5v5h14v-5z" opacity=".3"/><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM5 12h14v5H5z"/></svg>
+                    页头
+                </div>
+                <div class="m-item">
+                    <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                    商品详情页
+                </div>
+                
+                <div class="add-module-wrap">
+                    <div class="add-module-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> 添加模块</div>
+                </div>
+                
+                <div class="m-item">
+                    <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zm-2-7H5v5h14v-5z" opacity=".3"/><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3v-4h18v4z"/></svg>
+                    页脚
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER CANVAS (Preview) -->
+        <div class="center-canvas">
+            <div class="preview-frame">
+                
+                <div class="mock-banner">
+                    <div class="mock-banner-title">LIMITED TIME OFFER</div>
+                    <div class="mock-timer">
+                        MIN 
+                        <span class="timer-box">02</span> : 
+                        <span class="timer-box">41</span> : 
+                        <span class="timer-box">15</span>
+                    </div>
+                </div>
+                
+                <div class="mock-hero">
+                    <div class="mock-buy-btn">BUY NOW</div>
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                </div>
+                
+                <div class="mock-grid">
+                    <div class="mock-img-placeholder" style="grid-row: span 2; height: 100%;"></div>
+                    <div class="mock-img-placeholder"></div>
+                    <div class="mock-img-placeholder"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL (Settings) -->
+        <div class="right-panel">
+            
+            <div class="setting-section">
+                <div class="section-header">
+                    公告栏
+                </div>
+                <div class="section-content">
+                    <label class="s-checkbox">
+                        <input type="checkbox" checked> 显示公告
+                    </label>
+                    <label class="s-checkbox">
+                        <input type="checkbox"> 仅首页显示
+                    </label>
+                    <label class="s-checkbox">
+                        <input type="checkbox"> 滚动时固定位置
+                    </label>
+                    
+                    <div class="s-group" style="margin-top: 12px;">
+                        <span class="s-label">多公告栏切换方式:</span>
+                        <select class="s-select">
+                            <option>左右切换</option>
+                            <option>上下滑动</option>
+                        </select>
+                    </div>
+                    
+                    <div class="s-group" style="margin-top: 12px;">
+                        <span class="s-label">时间间隔</span>
+                        <div class="s-slider-container">
+                            <input type="range" class="s-slider" value="30">
+                        </div>
+                    </div>
+                    
+                    <div class="s-group" style="margin-top: 12px;">
+                        <span class="s-label">标题（请输入英文）</span>
+                        
+                        <div class="draggable-list">
+                            <div class="drag-item">
+                                <div class="drag-left">
+                                    <svg viewBox="0 0 24 24"><path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                                    公告
+                                </div>
+                                <div class="drag-right">
+                                    <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                                </div>
+                            </div>
+                            <div class="drag-item">
+                                <div class="drag-left">
+                                    <svg viewBox="0 0 24 24"><path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                                    公告
+                                </div>
+                                <div class="drag-right">
+                                    <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                                </div>
+                            </div>
+                            <div class="drag-item">
+                                <div class="drag-left">
+                                    <svg viewBox="0 0 24 24"><path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                                    公告
+                                </div>
+                                <div class="drag-right">
+                                    <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="add-ann-btn">+ 添加公告 (3/5)</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="setting-section">
+                <div class="section-header">
+                    菜单栏
+                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </div>
+                <div class="section-content">
+                    <label class="s-checkbox">
+                        <input type="checkbox" checked> 宽屏显示
+                    </label>
+                    <label class="s-checkbox">
+                        <input type="checkbox"> 移动端显示横向导航
+                    </label>
+                    
+                    <div class="s-group" style="margin-top: 12px;">
+                        <span class="s-label">导航风格:</span>
+                        <select class="s-select">
+                            <option>logo居中</option>
+                            <option>侧边栏</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一页商店 (带 MVP AB 测试)</title>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-hover: #3a56d4;
+            --sidebar-bg: #f8f9fc;
+            --sidebar-color: #4e5d78;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-secondary: #8c98a4;
+            --border-color: #e2e8f0;
+            --success: #38c172;
+            --danger: #e3342f;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar & Header (Simplified) */
+        .sidebar { width: 240px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { height: 60px; display: flex; align-items: center; padding: 0 20px; font-weight: 600; color: var(--primary-color); border-bottom: 1px solid var(--border-color); }
+        .menu-list { padding: 16px 0; flex-grow: 1; overflow-y: auto; }
+        .menu-item { padding: 12px 24px; color: var(--sidebar-color); font-size: 14px; cursor: pointer; }
+        .menu-item.active { background-color: #e4eaf9; color: var(--primary-color); border-right: 3px solid var(--primary-color); font-weight: 500; }
+        
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .top-nav { height: 60px; background-color: var(--card-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: flex-end; padding: 0 24px; flex-shrink: 0; }
+
+        /* Page Content */
+        .page-container { flex-grow: 1; padding: 24px; overflow-y: auto; }
+        
+        /* Banner */
+        .alert-box { background-color: #f8f9fc; border: 1px solid #d3def7; border-radius: 6px; padding: 16px; margin-bottom: 24px; font-size: 13px; line-height: 1.6; color: #4e5d78; }
+        .alert-box strong { display: flex; align-items: center; margin-bottom: 8px; font-size: 14px; color: #333; }
+
+        /* Tools Bar */
+        .tools-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .btn { padding: 8px 16px; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+        .btn-primary { background-color: var(--primary-color); color: #fff; }
+        .btn-outline { background-color: white; border-color: var(--border-color); color: var(--text-main); }
+        .form-control { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px; outline: none; }
+
+        /* Table */
+        .card { background: var(--card-bg); border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+        th, td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
+        th { color: var(--text-secondary); font-weight: 500; background: #fafbfc; }
+        .actions a { color: var(--primary-color); text-decoration: none; margin-right: 8px; cursor: pointer;}
+        .actions a:hover { text-decoration: underline; }
+
+        /* Switch */
+        .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .2s; border-radius: 20px;}
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: white; transition: .2s; border-radius: 50%;}
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        /* AB Test Badge */
+        .ab-badge {
+            background: #eef2fa;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: 6px;
+            font-weight: 500;
+        }
+
+        /* Modal Base */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal { background: #fff; border-radius: 8px; width: 500px; max-width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.15); overflow: hidden; }
+        .modal-header { padding: 16px 24px; border-bottom: 1px solid var(--border-color); font-weight: 600; font-size: 16px; display: flex; justify-content: space-between; align-items: center;}
+        .modal-close { cursor: pointer; color: var(--text-secondary); font-size: 20px; line-height: 1; }
+        .modal-body { padding: 24px; font-size: 14px; color: var(--text-main); line-height: 1.5; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; background: #fafbfc;}
+
+        /* Stat Blocks */
+        .stat-grid { display: flex; gap: 16px; margin-top: 20px;}
+        .stat-col { flex: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 16px; background: #fafafa;}
+        .stat-title { font-weight: 600; font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between;}
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary);}
+        .stat-val { font-weight: 500; color: var(--text-main); }
+        .highlight-cvr { color: var(--success); font-weight: 600; font-size: 16px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">ShopBuilder admin</div>
+        <div class="menu-list">
+            <div class="menu-item active">一页商店</div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="top-nav"></div>
+        <div class="page-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 style="font-size: 20px;">一页商店</h2>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-outline">政策页管理</button>
+                    <button class="btn btn-outline">像素管理</button>
+                </div>
+            </div>
+
+            <div class="alert-box">
+                <strong>信息提示</strong>
+                1. 一个商品支持创建多个不同的一页商店。<br>
+                2. 在一页商店中出售的商品需满足以...
+            </div>
+
+            <div class="tools-bar">
+                <input type="text" class="form-control" placeholder="请输入一页商店名称进行筛选" style="width: 260px;">
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-outline">导入一页商店</button>
+                    <button class="btn btn-primary">创建一页商店</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox"></th>
+                            <th>一页商店名称</th>
+                            <th>关联商品</th>
+                            <th>关联商品状态</th>
+                            <th>模板名称</th>
+                            <th>一页商店状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 正常未进行测试的实体 -->
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>Test-Product-checkout</td>
+                            <td>Test-Product</td>
+                            <td>上架</td>
+                            <td>Echo</td>
+                            <td>
+                                <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                            </td>
+                            <td class="actions">
+                                <a>设计</a> <a>编辑</a> <a onclick="openCreateTestModal()">AB测试</a> <a>复制</a> <a style="color:var(--text-secondary)">删除</a>
+                            </td>
+                        </tr>
+
+                        <!-- 正在进行 AB 测试的实体 -->
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td>
+                                Summer T-shirt Basic
+                                <span class="ab-badge">A/B 热测中</span>
+                            </td>
+                            <td>Summer T-shirt Basic</td>
+                            <td>上架</td>
+                            <td>Single Mode</td>
+                            <td>
+                                <label class="switch"><input type="checkbox" checked disabled><span class="slider"></span></label>
+                            </td>
+                            <td class="actions">
+                                <a>设计</a> <a>编辑</a> <a onclick="openViewDataModal()" style="font-weight: 600;">AB数据查看</a> <a>复制</a> <a style="color:var(--text-secondary)">删除</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MVP Modal: Create AB Test -->
+    <div class="modal-overlay" id="createTestModal">
+        <div class="modal">
+            <div class="modal-header">
+                发起 A/B 灰度测试
+                <span class="modal-close" onclick="closeModal('createTestModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 16px;">
+                    对商品 <b>[Test-Product]</b> 发起验证测试，系统将自动分配流量，以对比原生常规商城落地页与当前一页商店的转化效果。
+                </div>
+                
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">一页商店流量比例 (%)</label>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <input type="range" style="flex: 1; accent-color: var(--primary-color);" min="10" max="90" value="50" oninput="document.getElementById('trafficVal').innerText = this.value + '%'">
+                        <span id="trafficVal" style="font-weight: 600; width: 40px;">50%</span>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">（剩余流量将自动流向常规商品落地页）</div>
+                </div>
+
+                <div style="background: #fffbe6; border: 1px solid #ffe58f; padding: 12px; border-radius: 4px; font-size: 13px; color: #d48806;">
+                    开启后当前一页商店的状态将被锁定并处于上线态，直至你主动结束数据测试。
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('createTestModal')">取消</button>
+                <button class="btn btn-primary" onclick="startTest()">开始测试</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MVP Modal: View AB Test Data -->
+    <div class="modal-overlay" id="viewDataModal">
+        <div class="modal" style="width: 600px;">
+            <div class="modal-header">
+                A/B 测试数据极简看板
+                <span class="modal-close" onclick="closeModal('viewDataModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div>测试商品：<b>Summer T-shirt Basic</b></div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">运行时间: 12天 (约分配50%流量)</div>
+                </div>
+
+                <div class="stat-grid">
+                    <!-- A -->
+                    <div class="stat-col">
+                        <div class="stat-title">
+                            <span>A组 (常规商城落地页)</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>浏览量 (UV)</span>
+                            <span class="stat-val">3,205</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>产生订单数</span>
+                            <span class="stat-val">42</span>
+                        </div>
+                        <div class="stat-row" style="margin-top: 12px; border-top: 1px solid #ebeef5; padding-top: 12px;">
+                            <span>转化率 (CVR)</span>
+                            <span class="stat-val">1.31%</span>
+                        </div>
+                    </div>
+
+                    <!-- B -->
+                    <div class="stat-col" style="border-color: var(--primary-color);">
+                        <div class="stat-title" style="color: var(--primary-color);">
+                            <span>B组 (一页商店落地页)</span>
+                            <span style="font-size: 12px; font-weight: normal; background: #eef2fa; padding: 2px 6px; border-radius: 4px;">稳健优胜中</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>浏览量 (UV)</span>
+                            <span class="stat-val">3,250</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>产生订单数</span>
+                            <span class="stat-val">86</span>
+                        </div>
+                        <div class="stat-row" style="margin-top: 12px; border-top: 1px solid #ebeef5; padding-top: 12px;">
+                            <span>转化率 (CVR)</span>
+                            <span class="stat-val highlight-cvr">2.64%</span>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" style="color: #666;" onclick="closeModal('viewDataModal')">关闭面板</button>
+                <div style="flex:1"></div>
+                <button class="btn btn-outline" style="color: var(--danger); border-color: #fca5a5;">结束测试 (恢复为无分流)</button>
+                <button class="btn btn-primary" onclick="alert('测试已结束，100% 流量现已切走全量使用一页商店!')">应用优胜组 (100%生效一页商店)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openCreateTestModal() { document.getElementById('createTestModal').style.display = 'flex'; }
+        function openViewDataModal() { document.getElementById('viewDataModal').style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function startTest() {
+            alert('A/B 测试已成功启动！');
+            closeModal('createTestModal');
+        }
+    </script>
+</body>
+</html>

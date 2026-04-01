@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需求原型：商品预授权快捷支付</title>
+    <style>
+        :root {
+            --primary-color: #4a68ff;
+            --main-bg: #ffffff;
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --border-color: #ebeef5;
+            --prd-w: 320px;
+            --proto-w: 1600px;
+            --nav-height: 56px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7f9;
+            overflow: hidden;
+            padding-top: var(--nav-height);
+        }
+
+        .global-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: #d6d6d6;
+            border-bottom: 1px solid #c0c0c0;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 10000;
+        }
+
+        .nav-extra-trigger {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .nav-label {
+            font-size: 14px;
+            color: #333;
+            margin-left: 24px;
+            margin-right: 12px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-tab-item {
+            height: 32px;
+            padding: 0 16px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 4px;
+            border: none;
+            background: #ffffff;
+            color: #333;
+        }
+
+        .nav-tab-item.active {
+            background: #3e7dfb;
+            color: #ffffff;
+        }
+
+        .layout-wrapper {
+            display: flex;
+            width: 1920px;
+            height: calc(100vh - var(--nav-height));
+        }
+
+        .prototype-container {
+            width: var(--proto-w);
+            height: 100%;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            overflow-y: auto;
+            padding: 60px 0;
+        }
+
+        .pdp-layout {
+            display: flex;
+            gap: 60px;
+            width: 1000px;
+        }
+
+        .pdp-gallery {
+            flex: 1;
+        }
+
+        .pdp-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* SKELETON SCREEN */
+        .skeleton {
+            background: #f0f2f5;
+            background: linear-gradient(90deg, #f0f2f5 25%, #e6e8eb 37%, #f0f2f5 63%);
+            background-size: 400% 100%;
+            animation: skeleton-loading 1.4s ease infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0 50%;
+            }
+        }
+
+        /* BUTTONS */
+        .btn-add-to-cart {
+            width: 100%;
+            height: 42px;
+            background: #3B5BFF;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 2px;
+            border: none;
+            transition: 0.2s;
+            margin-bottom: 8px;
+        }
+
+        .btn-add-to-cart:hover {
+            background: #2a44cc;
+        }
+
+        .payment-button-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .btn-paypal, .btn-paylater {
+            flex: 1;
+            height: 42px;
+            background: #FFC439;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .btn-debit-credit {
+            width: 100%;
+            height: 42px;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .btn-apple-pay {
+            flex: 1;
+            height: 42px;
+            background: #333;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-google-pay {
+            flex: 1;
+            height: 42px;
+            background: #3C4043;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 4px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        /* PRD PANEL */
+        .prd-container {
+            width: var(--prd-w);
+            height: 100%;
+            background: #fff;
+            border-left: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .prd-header {
+            padding: 16px 20px;
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: 600;
+        }
+
+        .prd-body {
+            padding: 24px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #444;
+        }
+
+        .prd-body h4 {
+            color: var(--primary-color);
+            font-size: 14px;
+            margin-top: 16px;
+            margin-bottom: 8px;
+        }
+
+        .prd-body ul {
+            padding-left: 16px;
+            margin-bottom: 16px;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="global-nav">
+        <div class="nav-extra-trigger" onclick="alert('见侧边栏详细规则')">需求说明</div>
+        <div class="nav-label">电子钱包全链路原型：</div>
+        <div class="nav-tabs">
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-概览.html'">1. 收款方式概览</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-ApplePay配置.html'">2. ApplePay配置</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-GooglePay配置.html'">2.1 GooglePay配置</button>
+            <button class="nav-tab-item active" onclick="location.href='Useepay电子钱包-商品详情预授权.html'">3. 快捷支付按钮</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-常规结账.html'">4. 结账页(常规)</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-授权结账.html'">5. 结账页(已授权)</button>
+            <button class="nav-tab-item" onclick="location.href='Useepay电子钱包-安卓MATE浏览器(GP).html'">6. 安卓MATE环境(GP)</button>
+        </div>
+    </nav>
+
+    <div class="layout-wrapper">
+        <div class="prototype-container">
+            <!-- Simulated PDP Layout -->
+            <div class="pdp-layout">
+                <div class="pdp-gallery">
+                    <div class="skeleton" style="width: 100%; height: 500px; border-radius: 8px;"></div>
+                    <div style="display:flex; gap:16px; margin-top:16px;">
+                        <div class="skeleton" style="width: 80px; height: 80px;"></div>
+                        <div class="skeleton" style="width: 80px; height: 80px;"></div>
+                        <div class="skeleton" style="width: 80px; height: 80px;"></div>
+                    </div>
+                </div>
+
+                <div class="pdp-info">
+                    <div class="skeleton" style="height: 32px; width: 80%;"></div>
+                    <div class="skeleton" style="height: 24px; width: 40%; margin-bottom: 12px;"></div>
+
+                    <div class="skeleton" style="height: 60px; width: 100%; margin-bottom: 12px;"></div>
+
+                    <div style="margin-top:24px;">
+                        <button class="btn-add-to-cart">ADD TO CART</button>
+                        
+                        <div class="payment-button-row">
+                            <button class="btn-paypal">
+                                <span style="font-weight:800;font-style:italic;font-size:16px;"><span style="color:#003087;">Pay</span><span style="color:#0079C1;">Pal</span></span>
+                            </button>
+                            <button class="btn-paylater">Pay Later</button>
+                        </div>
+
+                        <button class="btn-debit-credit">Debit or Credit Card</button>
+
+                        <div class="payment-button-row">
+                            <button class="btn-google-pay" onclick="location.href='Useepay电子钱包-授权结账.html'">
+                                Buy with <img src="../../payment_icon/google_pay.png" style="height:14px; margin-left:2px; filter: brightness(0) invert(1);"> 
+                            </button>
+                            
+                            <button class="btn-apple-pay" onclick="location.href='Useepay电子钱包-授权结账.html'">
+                                <svg viewBox="0 0 512 512" width="18" height="18" fill="#fff">
+                                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 230 4 330.8c0 52 13 104.3 43.1 146.5 25.4 35.3 54.3 71.3 93.9 70.3 35.5-.9 45.4-23.8 88.5-23.8 42.1 0 51 23.8 88.5 23.8 41.5 0 68.3-34.8 92-68.9 29.3-43.2 40.5-85 41.5-87.1-1-1-61.9-23.2-62.8-122.9z" />
+                                    <path d="M260.6 138.8c30.2-37.1 27.2-69.8 26.2-76.8-27.9 2.2-63.5 19.3-84 43.2-16.7 19.6-32.9 50.8-28.5 81.3 30.5 1.5 62.4-17.6 86.3-47.7z" />
+                                </svg>
+                                Pay
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="skeleton" style="height: 120px; width: 100%; margin-top:24px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="prd-container">
+            <div class="prd-header">交互细则：预授权快捷页面</div>
+            <div class="prd-body">
+                <h4>1. 展示条件探测</h4>
+                <ul>
+                    <li>由于网关能力限制，需调用原生 JS SDK 检测设备能力。</li>
+                    <li>若为 MacOS Safari 且绑有卡片，显示 <b>Apple Pay</b> 按钮。</li>
+                    <li>若为 Chrome 支持 PaymentRequestApi 环境，显示 <b>Google Pay</b> 按钮。</li>
+                    <li>若均不支持，此区域完全隐藏，仅保留 Add to Cart。</li>
+                </ul>
+
+                <h4>2. 原生交互流转</h4>
+                <ul>
+                    <li>点击 Apple/Google Pay 后，唤起当前设备的原生底部弹窗校验凭证（指纹/FaceID/锁屏密码）。</li>
+                    <li>用户在原生弹窗内选中卡片和收件地址。前端获取加密 Token 及地址块。</li>
+                    <li>前端不在此步骤生单，而是带此数据 <b>重定向至结账页 (Checkout)</b> 渲染最终费用。</li>
+                </ul>
+
+                <h4>3. 原型示意</h4>
+                <ul>
+                    <li>直接点击测试左侧任意钱包支付按钮，即可进入下一步的【已授权结账页】原型演示。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

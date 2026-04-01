@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一页商店 - 创建A/B测试</title>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-hover: #3a56d4;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; padding-bottom: 80px;}
+
+        /* Top Header */
+        .top-header { background-color: var(--card-bg); height: 60px; display: flex; align-items: center; padding: 0 40px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100;}
+        .back-btn { width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-right: 16px; border: 1px solid var(--border-color); }
+        .back-btn:hover { background: #f8f9fa; }
+        .page-title { font-size: 18px; font-weight: 600; }
+
+        /* Main Config Area */
+        .container { max-width: 900px; margin: 32px auto; display: flex; flex-direction: column; gap: 24px; padding: 0 20px;}
+
+        .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 28px; }
+        .card-header { font-size: 16px; font-weight: 600; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+
+        .form-group { margin-bottom: 24px; }
+        .form-label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px; }
+        .form-label .required { color: red; margin-left: 4px; }
+        .form-tip { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; outline: none; transition: all 0.2s;}
+        .form-control:focus { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1); }
+        
+        .row { display: flex; gap: 20px; }
+        .col { flex: 1; }
+
+        /* Traffic distribution block */
+        .variant-block { border: 1px solid var(--border-color); border-radius: 6px; padding: 20px; margin-bottom: 16px; position: relative; background: #fafafa;}
+        .variant-title { font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;}
+        .variant-badge { padding: 2px 8px; background: #e0e7ff; color: var(--primary-color); border-radius: 4px; font-size: 12px; }
+        
+        /* Select visualization */
+        .product-selector { border: 1px dashed #ccc; border-radius: 4px; padding: 16px; text-align: center; cursor: pointer; background: #fff;}
+        .product-selector:hover { border-color: var(--primary-color); background: #f8faff; }
+        
+        .selected-item { border: 1px solid var(--border-color); padding: 12px; border-radius: 4px; display: flex; align-items: center; gap: 12px; background: #fff;}
+        .img-ph { width: 40px; height: 40px; background: #eee; border-radius: 4px; }
+
+        /* Bottom Action Bar */
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: white; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);}
+        .btn { padding: 8px 24px; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid transparent; }
+        .btn-primary { background-color: var(--primary-color); color: #fff; }
+        .btn-outline { background-color: white; border-color: var(--border-color); color: var(--text-main); }
+        .btn:hover { opacity: 0.9; }
+
+        /* Range slider styling */
+        .slider-wrapper { display: flex; align-items: center; gap: 16px; }
+        input[type=range] { flex: 1; accent-color: var(--primary-color); }
+        
+        .metric-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px;}
+        .metric-card { border: 1px solid var(--border-color); border-radius: 6px; padding: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s;}
+        .metric-card.active { border-color: var(--primary-color); background: #f0f4ff; }
+        .metric-card:hover:not(.active) { border-color: #aaa; }
+    </style>
+</head>
+<body>
+    <div class="top-header">
+        <div class="back-btn" onclick="location.href='1-AB测试-列表页.html'">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+        </div>
+        <div class="page-title">创建 A/B 测试实验</div>
+    </div>
+
+    <div class="container">
+        <!-- 基本信息 -->
+        <div class="card">
+            <div class="card-header">1. 基本配置</div>
+            <div class="form-group">
+                <label class="form-label">实验名称 <span class="required">*</span></label>
+                <input type="text" class="form-control" placeholder="例如：秋季爆款卫衣 落地页结构对比">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">核心优化指标 <span class="required">*</span></label>
+                <div class="form-tip">决定本次测试判定胜负的主要数据指标。</div>
+                <div class="metric-cards">
+                    <div class="metric-card active">
+                        <input type="radio" checked name="metric" style="accent-color: var(--primary-color);">
+                        <div>
+                            <div style="font-weight: 500;">支付转化率 (CVR)</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">访客 -> 最终付款成功的占比</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <input type="radio" name="metric" style="accent-color: var(--primary-color);">
+                        <div>
+                            <div style="font-weight: 500;">加入购物车率 (ATC)</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">访客 -> 点击加购按钮的占比</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <input type="radio" name="metric" style="accent-color: var(--primary-color);">
+                        <div>
+                            <div style="font-weight: 500;">客单价 (AOV)</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">平均每个付款订单的金额</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <input type="radio" name="metric" style="accent-color: var(--primary-color);">
+                        <div>
+                            <div style="font-weight: 500;">到达结账页率</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">访客 -> 查阅结账页面的占比</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页面变体配置 -->
+        <div class="card">
+            <div class="card-header">2. 落地页配置</div>
+            <div class="form-tip" style="margin-bottom: 24px;">指定需要参与分流测试的页面链接组合，系统会依据下方权重对商详页或活动页的公域流量重新分发。</div>
+            
+            <!-- 对照组 (常规商品页) -->
+            <div class="variant-block">
+                <div class="variant-title">
+                    <div><span class="variant-badge" style="background: #e2e8f0; color: #475569;">对照组 (A组)</span> 常规商城落地页</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">选择关联商品</label>
+                    <div class="selected-item">
+                        <div class="img-ph"></div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500; font-size: 14px;">Classic Autumn Hoodie</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">SKU: HD-0982 | $45.00</div>
+                        </div>
+                        <button class="btn btn-outline" style="padding: 4px 12px; font-size: 12px;">重选</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 10px 0; color: var(--text-secondary); font-size: 12px; font-weight: bold;">VS</div>
+
+            <!-- 变体组 (一页商店) -->
+            <div class="variant-block">
+                <div class="variant-title">
+                    <div><span class="variant-badge">变体组 (B组)</span> 一页商店落地页</div>
+                    <button class="btn btn-outline" style="padding: 4px 12px; font-size: 12px; color: #d21c1c; border-color: #d21c1c;">删除组别</button>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">选择已装修的一页商店</label>
+                    <div class="product-selector">
+                        <span style="color: var(--primary-color);">+ 选择【一页商店】实体库</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-outline" style="width: 100%; border-style: dashed; color: var(--primary-color); border-color: var(--primary-color);">+ 添加更多变体组</button>
+        </div>
+
+        <!-- 分流设置 -->
+        <div class="card">
+            <div class="card-header">3. 流量分配规则</div>
+            
+            <div class="form-group">
+                <label class="form-label">目标流量分配 (<span id="totalPercent">100</span>%)</label>
+                <div class="form-tip">建议平分流量以获得最快速准确的数据检验结果。如果变体页具有较高风险，分配少量灰度流量。</div>
+                <div style="margin-top: 24px;">
+                    <div class="slider-wrapper" style="margin-bottom: 16px;">
+                        <span style="width: 60px; font-size: 14px; color: #475569; font-weight: 500;">A组</span>
+                        <input type="range" min="0" max="100" value="50" id="sliderA" disabled>
+                        <span style="width: 40px; text-align: right; font-weight: 600;">50%</span>
+                    </div>
+                    <div class="slider-wrapper">
+                        <span style="width: 60px; font-size: 14px; color: var(--primary-color); font-weight: 500;">B组</span>
+                        <input type="range" min="0" max="100" value="50" id="sliderB">
+                        <span style="width: 40px; text-align: right; font-weight: 600;">50%</span>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                // Simple interactivity for slider representation (demo only)
+                document.getElementById('sliderB').addEventListener('input', function(e) {
+                    let bVal = parseInt(e.target.value);
+                    let aVal = 100 - bVal;
+                    document.getElementById('sliderA').value = aVal;
+                    e.target.nextElementSibling.innerText = bVal + '%';
+                    document.getElementById('sliderA').nextElementSibling.innerText = aVal + '%';
+                });
+            </script>
+        </div>
+    </div>
+
+    <!-- 底部悬浮操作栏 -->
+    <div class="bottom-bar">
+        <div style="font-size: 13px; color: var(--text-secondary);">所有修改将实时自动存为草稿。新实验开始后不可修改包含链接组等核心配置。</div>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn btn-outline" onclick="location.href='1-AB测试-列表页.html'">取消</button>
+            <button class="btn btn-outline">保存为草稿</button>
+            <button class="btn btn-primary" onclick="location.href='3-AB测试-数据看板.html'">发布并启动测试</button>
+        </div>
+    </div>
+</body>
+</html>

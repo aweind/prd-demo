@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑商品 - 原型</title>
+    <style>
+        :root {
+            --primary-color: #4a68ff;
+            --sidebar-bg: #f7f9fa;
+            --header-bg: #ffffff;
+            --main-bg: #f0f2f5;
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --text-light: #999999;
+            --border-color: #ebeef5;
+            --hover-bg: #eef1fc;
+            --card-bg: #ffffff;
+            
+            --success-color: #e6f7ec;
+            --success-text: #2fb565;
+            --warning-color: #fff3e0;
+            --warning-text: #f57c00;
+            --danger-color: #ffeeeb;
+            --danger-text: #ff4d4f;
+            --info-color: #e6f0ff;
+            --info-text: #4a68ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--main-bg);
+            color: var(--text-main);
+        }
+
+        /* Main Content */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--main-bg);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Top Header */
+        .top-header {
+            height: 60px;
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 24px;
+            flex-shrink: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .header-action-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 20px;
+            cursor: pointer;
+            border-left: 1px solid var(--border-color);
+            padding-left: 20px;
+        }
+
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #ccc;
+        }
+
+        /* Sub Header / Breadcrumb */
+        .sub-header {
+            height: 56px;
+            background-color: var(--main-bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            flex-shrink: 0;
+            z-index: 5;
+        }
+
+        .breadcrumb a {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary-color);
+        }
+
+        .sub-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            color: var(--text-main);
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            border-color: #dcdfe6;
+            background: #f9f9f9;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background: #3b54d6;
+        }
+
+        .btn-danger {
+            background: #ff4d4f;
+            color: #fff;
+            border-color: #ff4d4f;
+        }
+
+        .btn-icon-only {
+            padding: 6px 10px;
+        }
+
+        /* Content Layout */
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 40px 80px 40px; /* 80px bottom to leave space for fixed bottom bar */
+        }
+        
+        /* Fixed Bottom Bar */
+        .bottom-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: #fff;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            z-index: 10;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
+        }
+
+        /* Forms and Cards */
+        .layout-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-top: 10px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header-note {
+            font-size: 12px;
+            color: var(--text-light);
+            font-weight: normal;
+            margin-left: 8px;
+        }
+
+        .card-action {
+            color: var(--primary-color);
+            font-size: 13px;
+            font-weight: normal;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .card-action:hover {
+            text-decoration: underline;
+        }
+
+        .card-body {
+            padding: 24px 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            font-size: 13px;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+        .form-label .required {
+            color: var(--danger-text);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+        }
+        
+        .form-control::placeholder {
+            color: #ccc;
+        }
+
+        /* Rich Text Editor */
+        .rte-container {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .rte-toolbar {
+            background: #fafafa;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .rte-tool-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 4px 6px;
+            color: var(--text-secondary);
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .rte-tool-btn:hover {
+            background: #e1e4e8;
+            color: var(--text-main);
+        }
+        .rte-divider {
+            width: 1px;
+            height: 16px;
+            background: #ddd;
+            margin: 0 4px;
+        }
+
+        .rte-content {
+            padding: 16px;
+            min-height: 200px;
+            font-size: 14px;
+            line-height: 1.6;
+            outline: none;
+        }
+        .rte-content img {
+            max-width: 100%;
+            display: block;
+            margin: 10px 0;
+        }
+
+        /* Media Grid */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 16px;
+        }
+
+        .media-item {
+            aspect-ratio: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            background: #f9f9f9;
+        }
+
+        .media-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        
+        .media-add {
+            aspect-ratio: 1;
+            border: 1px dashed #d9d9d9;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+            background: #fafafa;
+        }
+        .media-add:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* Switch Toggle */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        /* Checkbox styling */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+        .checkbox-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* Tag List */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        .option-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+        .option-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .option-name {
+            font-weight: 500;
+            font-size: 13px;
+            width: 60px;
+            color: var(--text-secondary);
+        }
+        .tag-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .opt-tag {
+            padding: 4px 12px;
+            background: #e6f7ec;
+            color: #2e8b57;
+            font-size: 13px;
+            border-radius: 16px;
+            border: 1px solid #c3e6cb;
+        }
+        
+        /* Variants Table */
+        .variant-table-container {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        .variant-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+            min-width: 900px;
+        }
+        .variant-table th {
+            padding: 10px 12px;
+            background: #fafafa;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .variant-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+        .variant-table tr:last-child td {
+            border-bottom: none;
+        }
+        .variant-table .form-control {
+            padding: 6px 8px;
+            min-width: 80px;
+        }
+        .v-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            object-fit: cover;
+            display: block;
+        }
+        
+        /* SEO Preview */
+        .seo-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 16px;
+        }
+        .seo-title {
+            color: #1a0dab;
+            font-size: 18px;
+            font-weight: normal;
+        }
+        .seo-url {
+            color: #006621;
+            font-size: 13px;
+        }
+        .seo-desc {
+            color: #545454;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+    </style>
+    <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+
+        <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <img class="logo-icon" src="placeholder.svg" alt="Logo">
+            <div class="logo-text">
+                <span class="logo-title">Demostore <span style="font-size: 10px; opacity: 0.6; margin-left:4px;">▼</span></span>
+                <span class="logo-subtitle">ID: 001</span>
+            </div>
+        </div>
+        
+        <div class="menu-list">
+            <div class="menu-item">
+                <div class="menu-item-left">
+                    <div class="menu-icon" style="background-color: #666; -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox=\"0 0 24 24\"><path d=\"M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z\"/></svg>') no-repeat center;"></div>
+                    主页
+                </div>
+            </div>
+            
+            <div class="menu-item ">
+                <div class="menu-item-left">
+                    <div class="menu-icon" style="background-color: #666; -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox=\"0 0 24 24\"><path d=\"M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z\"/></svg>') no-repeat center;"></div>
+                    订单
+                </div>
+                <span style="font-size:12px; opacity:0.5;">▶</span>
+            </div>
+            
+            
+            <div class="menu-item active">
+                <div class="menu-item-left">
+                    <div class="menu-icon" style="background-color: var(--primary-color); -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox=\"0 0 24 24\"><path d=\"M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z\"/></svg>') no-repeat center;"></div>
+                    商品
+                </div>
+                <span style="font-size:12px; opacity:0.5;">▼</span>
+            </div>
+            
+            <div class="submenu">
+                <div class="submenu-item active" onclick="window.location.href='product_list.html'">商品列表</div>
+                <div class="submenu-item">库存列表</div>
+                <div class="submenu-item">商品分类</div>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-item-left">
+                    <div class="menu-icon" style="background-color: #666; -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox=\"0 0 24 24\"><path d=\"M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z\"/></svg>') no-repeat center;"></div>
+                    顾客
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-item-left">
+                    <div class="menu-icon" style="background-color: #666; -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox=\"0 0 24 24\"><path d=\"M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z\"/></svg>') no-repeat center;"></div>
+                    数据
+                </div>
+                <span style="font-size:12px; opacity:0.5;">▶</span>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-item-left">
+                    <div class="menu-icon" style="background-color: #666; -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox=\"0 0 24 24\"><path d=\"M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z\"/></svg>') no-repeat center;"></div>
+                    折扣
+                </div>
+                <span style="font-size:12px; opacity:0.5;">▶</span>
+            </div>
+            
+            <div class="menu-item">
+                <div class="menu-item-left">
+                    <div class="menu-icon" style="background-color: #666; -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox=\"0 0 24 24\"><path d=\"M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z\"/></svg>') no-repeat center;"></div>
+                    博客
+                </div>
+                <span style="font-size:12px; opacity:0.5;">▶</span>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-item-left">
+                    <div class="menu-icon" style="background-color: #666; -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox=\"0 0 24 24\"><path d=\"M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z\"/></svg>') no-repeat center;"></div>
+                    应用中心
+                </div>
+            </div>
+            
+            <div class="menu-item">
+                <div class="menu-item-left">
+                    <div class="menu-icon" style="background-color: #666; -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox=\"0 0 24 24\"><path d=\"M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z\"/></svg>') no-repeat center;"></div>
+                    店铺管理
+                </div>
+                <span style="font-size:12px; opacity:0.5;">▶</span>
+            </div>
+
+        </div>
+        
+        <div class="sidebar-bottom">
+            <div class="menu-icon" style="background-color: #666; -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox=\"0 0 24 24\"><path d=\"M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z\"/></svg>') no-repeat center;"></div>
+            设置
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        
+        <!-- Header -->
+        <div class="top-header">
+            <div class="header-actions">
+                <div class="header-action-item">📱 移动客户端</div>
+                <div class="header-action-item">🌐</div>
+                <div class="header-action-item">🔔</div>
+                <div class="header-action-item">❓</div>
+            </div>
+            <div class="user-profile">
+                <div class="avatar"></div>
+                <span style="font-size: 14px;">user ▼</span>
+            </div>
+        </div>
+
+        <!-- Sub Header & Breadcrumbs -->
+        <div class="sub-header">
+            <div class="breadcrumb">
+                <a href="product_list.html">← 编辑商品</a>
+            </div>
+            <div class="sub-actions">
+                <button class="btn btn-icon-only" disabled><span style="opacity:0.3">&lt;</span></button>
+                <button class="btn btn-icon-only">&gt;</button>
+                <button class="btn">复制</button>
+                <button class="btn">预览</button>
+            </div>
+        </div>
+
+        <!-- Scrollable Content Area -->
+        <div class="content-scroll">
+            <div class="layout-container">
+                
+                <!-- Basic Info Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div style="display:flex; align-items:center;">基本信息 <span class="card-header-note">ID: x3000790 📋</span></div>
+                        <a href="#" class="card-action">更多操作</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">商品名称 <span class="required">*</span></label>
+                            <input type="text" class="form-control" value="🔥 60% OFF NOW! 🔥【Plug and Play! Wireless Connection 🚘 2-in-1 Wireless Adapter - iPhone & Android Auto, turn your car into a smart cinema in seconds!】" />
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">副标题</label>
+                            <input type="text" class="form-control" placeholder="请输入商品描述或者卖点信息" />
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">详细描述</label>
+                            <div class="rte-container">
+                                <div class="rte-toolbar">
+                                    <button class="rte-tool-btn">段落 ▾</button>
+                                    <button class="rte-tool-btn">14px ▾</button>
+                                    <div class="rte-divider"></div>
+                                    <button class="rte-tool-btn"><b>B</b></button>
+                                    <button class="rte-tool-btn"><i>I</i></button>
+                                    <button class="rte-tool-btn"><u>U</u></button>
+                                    <button class="rte-tool-btn">S</button>
+                                    <div class="rte-divider"></div>
+                                    <button class="rte-tool-btn">☷ ▾</button>
+                                    <button class="rte-tool-btn">🔗</button>
+                                    <button class="rte-tool-btn">🖼️</button>
+                                    <button class="rte-tool-btn">{" "}</button>
+                                </div>
+                                <div class="rte-content" contenteditable="true">
+                                    <p style="background: #fff3cd; color: #856404; padding: 4px; display:inline-block; font-size:12px; margin-bottom: 12px; border-radius:3px;">FEATURES:</p>
+                                    <p><b>WIRED TO WIRELESS, INSTANTLY SMARTER</b> - Transform your wired Android Auto into a wireless system—eliminating messy cables while keeping full functionality. Like navigation, music and voice control. Enjoy a clutter-free dashboard and safer, hands-free driving.</p>
+                                    
+                                    <div style="background:var(--primary-color); height:220px; color:#fff; display:flex; align-items:center; justify-content:center; text-align:center; position:relative; overflow:hidden; border-radius:8px; margin-top:20px;">
+                                        <div>
+                                            <h1 style="font-size:36px; margin-bottom:10px; font-weight:800;">2-IN-1 WIRELESS ADAPTER FOR<br>IPHONE & ANDROID AUTO</h1>
+                                            <!-- Simple abstract blocks to mimic the big image in screenshot -->
+                                            <div style="display:flex; justify-content:center; gap:10px; margin-top:30px;">
+                                                <div style="width:120px; height:80px; background:#fff; border-radius:6px; opacity:0.9; box-shadow:0 4px 10px rgba(0,0,0,0.2);"></div>
+                                                <div style="width:180px; height:100px; background:#fff; border-radius:6px; opacity:0.95; transform:translateY(-10px); box-shadow:0 6px 15px rgba(0,0,0,0.3);"></div>
+                                                <div style="width:120px; height:80px; background:#fff; border-radius:6px; opacity:0.9; box-shadow:0 4px 10px rgba(0,0,0,0.2);"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Media Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div style="display:flex; align-items:center;">商品素材 (25/25) <span class="card-header-note">已选择 0 个文件</span></div>
+                        <a href="#" class="card-action">从文件库选择</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="media-grid">
+                            <!-- Let's render about 16 images to mimic the grid -->
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <div class="media-item"><img src="placeholder.svg"></div>
+                            <!-- Add button -->
+                            <div class="media-add">＋</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Options Card -->
+                <div class="card">
+                    <div class="card-header">
+                        商品选项
+                        <div style="display:flex; align-items:center; gap:8px; font-weight:normal; font-size:13px; color:var(--text-main);">
+                            上架商品
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">商品售价</label>
+                                <div style="display:flex;">
+                                    <span style="background:#f7f9fa; border:1px solid var(--border-color); border-right:none; padding:10px 12px; border-radius:4px 0 0 4px; color:var(--text-light);">按市场最新汇率</span>
+                                    <input type="text" class="form-control" value="€ 35.99" style="border-radius:0 4px 4px 0;" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">商品原价 <span class="card-header-note" style="float:right; margin:0;"><a href="#" class="card-action">取消限额</a></span></label>
+                                <input type="text" class="form-control" placeholder="请输入原售价" />
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">成本价</label>
+                                <input type="text" class="form-control" placeholder="€ €25.99" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">SKU</label>
+                                <input type="text" class="form-control" placeholder="请输入商品SKU" />
+                            </div>
+                        </div>
+                        
+                         <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">重量/尺寸</label>
+                                <input type="text" class="form-control" placeholder="名字、规格及其它" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Multi-variants Setting -->
+                <div class="card">
+                    <div class="card-header">多属性设置</div>
+                    <div class="card-body">
+                        <label class="checkbox-label" style="margin-bottom: 16px;">
+                            <input type="checkbox" checked>
+                            此商品有多个选项，如尺寸或颜色
+                        </label>
+
+                        <div class="options-list">
+                            <div class="option-row">
+                                <div class="option-content">
+                                    <div class="option-name">Style</div>
+                                    <div class="tag-group">
+                                        <span class="opt-tag">Colorful</span>
+                                        <span class="opt-tag">Black</span>
+                                        <span class="opt-tag">Silver</span>
+                                    </div>
+                                </div>
+                                <a href="#" class="card-action">编辑</a>
+                            </div>
+                            <div style="height:1px; background:var(--border-color); margin:8px 0;"></div>
+                            <div class="option-row">
+                                <div class="option-content">
+                                    <div class="option-name">Set</div>
+                                    <div class="tag-group">
+                                        <span class="opt-tag">Wireless Adapter Only</span>
+                                        <span class="opt-tag">Wireless Adapter + Charging Cable</span>
+                                    </div>
+                                </div>
+                                <a href="#" class="card-action">编辑</a>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" style="margin-bottom:20px;">+ 添加更多选项</button>
+                        
+                        <!-- Table tool bar -->
+                        <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items:center;">
+                            <div style="display:flex; gap:16px; font-size:13px;">
+                                <span>批量设置:</span>
+                                <a href="#" class="card-action">价格</a>
+                                <a href="#" class="card-action">成本</a>
+                                <a href="#" class="card-action">SKU</a>
+                                <a href="#" class="card-action">重量</a>
+                            </div>
+                            <a href="#" class="card-action">展开表格</a>
+                        </div>
+
+                        <div class="variant-table-container">
+                            <table class="variant-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:30px;"><input type="checkbox"></th>
+                                        <th style="width:60px;">图片</th>
+                                        <th style="min-width:180px;">选项</th>
+                                        <th>售价</th>
+                                        <th>库存追踪</th>
+                                        <th>成本价值</th>
+                                        <th>SKU</th>
+                                        <th>重量</th>
+                                        <th>条码</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td><img src="placeholder.svg" class="v-img"></td>
+                                        <td>Colorful / Wireless Adapter Only</td>
+                                        <td><input type="text" class="form-control" value="€ 35.99"></td>
+                                        <td>
+                                            <label class="checkbox-label">
+                                                <input type="checkbox"> 开启库存追踪
+                                            </label>
+                                        </td>
+                                        <td>N/A</td>
+                                        <td><input type="text" class="form-control" value="LK30258315HEI"></td>
+                                        <td>
+                                            <div style="display:flex; width:100px;">
+                                                <input type="text" class="form-control" value="0.20" style="border-radius:4px 0 0 4px; flex:1;">
+                                                <span style="background:#f7f9fa; border:1px solid var(--border-color); border-left:none; padding:6px; border-radius:0 4px 4px 0; color:var(--text-secondary); display:flex; align-items:center; font-size:12px;">克 ▾</span>
+                                            </div>
+                                        </td>
+                                        <td><input type="text" class="form-control" placeholder="请输入条码"></td>
+                                        <td><a href="#" class="card-action">编辑</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td><img src="placeholder.svg" class="v-img"></td>
+                                        <td>Colorful / Wireless Adapter + Charging Cable</td>
+                                        <td><input type="text" class="form-control" value="€ 43.99"></td>
+                                        <td>
+                                            <label class="checkbox-label">
+                                                <input type="checkbox"> 开启库存追踪
+                                            </label>
+                                        </td>
+                                        <td>N/A</td>
+                                        <td><input type="text" class="form-control" value="LK30258317CAP/HHE"></td>
+                                        <td>
+                                            <div style="display:flex; width:100px;">
+                                                <input type="text" class="form-control" value="0.30" style="border-radius:4px 0 0 4px; flex:1;">
+                                                <span style="background:#f7f9fa; border:1px solid var(--border-color); border-left:none; padding:6px; border-radius:0 4px 4px 0; color:var(--text-secondary); display:flex; align-items:center; font-size:12px;">克 ▾</span>
+                                            </div>
+                                        </td>
+                                        <td><input type="text" class="form-control" placeholder="请输入条码"></td>
+                                        <td><a href="#" class="card-action">编辑</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="checkbox"></td>
+                                        <td><img src="placeholder.svg" class="v-img"></td>
+                                        <td>Black / Wireless Adapter Only</td>
+                                        <td><input type="text" class="form-control" value="€ 35.99"></td>
+                                        <td>
+                                            <label class="checkbox-label">
+                                                <input type="checkbox"> 开启库存追踪
+                                            </label>
+                                        </td>
+                                        <td>N/A</td>
+                                        <td><input type="text" class="form-control" value="LK30258315THE"></td>
+                                        <td>
+                                            <div style="display:flex; width:100px;">
+                                                <input type="text" class="form-control" value="0.20" style="border-radius:4px 0 0 4px; flex:1;">
+                                                <span style="background:#f7f9fa; border:1px solid var(--border-color); border-left:none; padding:6px; border-radius:0 4px 4px 0; color:var(--text-secondary); display:flex; align-items:center; font-size:12px;">克 ▾</span>
+                                            </div>
+                                        </td>
+                                        <td><input type="text" class="form-control" placeholder="请输入条码"></td>
+                                        <td><a href="#" class="card-action">编辑</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Card -->
+                <div class="card">
+                    <div class="card-header">搜索引擎优化</div>
+                    <div class="card-body">
+                        <label class="checkbox-label">
+                            <input type="checkbox" checked> 启用自动搜索引擎 ℹ️
+                        </label>
+                        
+                        <div class="form-group" style="margin-top:20px;">
+                            <label class="form-label">商品详情的链接</label>
+                            <input type="text" class="form-control" value="2-in-1-wireless-adapter-for-auto" />
+                        </div>
+
+                        <div style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:600; font-size:14px;">搜索引擎预览</span>
+                                <a href="#" class="card-action">编辑</a>
+                            </div>
+                            
+                            <div class="seo-preview">
+                                <div class="seo-title">🔥 60% OFF NOW! 🔥【Plug and Play! Wireless Connection 🚘 2-in-1 Wireless Ada...</div>
+                                <div class="seo-url">https://demo2.shopyy.com/products/60-off-now-plug-and-play-wireless-connection-2-in-1-wireless-adapter--iphone-android-auto-turn-your-car-into-a-smart-cinema-in-seconds-3</div>
+                                <div class="seo-desc">FEATURES WIRED TO WIRELESS, INSTANTLY SMARTER - Transform your wired Android Auto into a wireless system—eliminating messy cables while keeping full functionality. Like navigation, music and voice control. Enjoy a clutter-free dashboard and safer, hands-free driving.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Card -->
+                <div class="card">
+                    <div class="card-header">元字段 <a href="#" class="card-action" style="font-weight:normal; font-size:13px; float:right;">编辑</a></div>
+                    <div class="card-body">
+                        <div style="display:flex; justify-content:space-between; font-size:13px;">
+                            <span style="color:var(--text-secondary);">商品_卖点</span>
+                            <a href="#" class="card-action">在此处填入内容 ✏️</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <!-- Fixed Bottom Actions Bar -->
+        <div class="bottom-bar">
+            <button class="btn btn-danger">删除</button>
+            <button class="btn btn-primary" style="padding: 8px 32px;">保存</button>
+        </div>
+        
+    </div>
+
+</body>
+</html>

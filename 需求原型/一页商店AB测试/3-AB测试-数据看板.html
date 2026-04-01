@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A/B 测试实验数据</title>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --border-color: #e2e8f0;
+            --green: #10b981;
+            --red: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-main); line-height: 1.5; }
+
+        .top-header { background-color: var(--card-bg); height: 60px; display: flex; align-items: center; padding: 0 40px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100;}
+        .back-btn { width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-right: 16px; border: 1px solid var(--border-color); }
+        .back-btn:hover { background: #f8f9fa; }
+        .page-title { font-size: 18px; font-weight: 600; display:flex; align-items: center; gap: 12px;}
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; background: #e3fcef; color: #1b8552; border: 1px solid #b7eb8f;}
+
+        .container { max-width: 1200px; margin: 32px auto; display: flex; flex-direction: column; gap: 24px; padding: 0 20px;}
+
+        /* Header Info Card */
+        .info-card { background: var(--card-bg); border-radius: 8px; padding: 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
+        .info-block { flex: 1; }
+        .info-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+        .info-value { font-size: 15px; font-weight: 500;}
+
+        /* Results Overview */
+        .card { background: var(--card-bg); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 24px; overflow: hidden; }
+        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;}
+        
+        .winner-banner { background: linear-gradient(90deg, #f0f9ff 0%, #e0e7ff 100%); border: 1px solid #bae6fd; border-radius: 6px; padding: 16px 24px; display: flex; align-items: center; gap: 16px; margin-bottom: 24px;}
+        .winner-icon { font-size: 32px; }
+        .winner-text h3 { font-size: 18px; color: #0369a1; margin-bottom: 4px;}
+        .winner-text p { font-size: 13px; color: var(--text-secondary); }
+
+        /* Data comparison table */
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { padding: 16px; text-align: left; font-size: 14px; border-bottom: 1px solid var(--border-color); }
+        th { color: var(--text-secondary); font-weight: 500; background: #fafafa; }
+        
+        .cell-highlight { font-size: 20px; font-weight: 600; }
+        .diff-tag { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-left: 8px; }
+        .diff-up { background: #d1fae5; color: #047857; }
+        .diff-down { background: #fee2e2; color: #b91c1c; }
+        
+        /* Funnel chart simulation */
+        .funnel-row { display: flex; margin-bottom: 8px; align-items: stretch; height: 60px;}
+        .funnel-label { width: 120px; display: flex; align-items: center; font-size: 13px; color: var(--text-secondary);}
+        .funnel-bars { flex: 1; display: flex; align-items: center; padding-right: 20px;}
+        
+        .bar-container { width: 100%; height: 32px; display: flex; flex-direction: column; justify-content: center; gap: 4px;}
+        .bar-a { height: 12px; background-color: #cbd5e1; border-radius: 0 2px 2px 0; display:flex; align-items: center;}
+        .bar-b { height: 12px; background-color: var(--primary-color); border-radius: 0 2px 2px 0; display:flex; align-items: center;}
+        
+        .bar-val { font-size: 11px; margin-left: 8px; font-weight: 500; color: #333; }
+
+        .btn { padding: 6px 16px; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid transparent; }
+        .btn-primary { background-color: var(--primary-color); color: #fff; }
+        .btn-outline { background-color: white; border-color: var(--border-color); border: 1px solid #ccc; color: var(--text-main); }
+    </style>
+</head>
+<body>
+    <div class="top-header">
+        <div class="back-btn" onclick="location.href='1-AB测试-列表页.html'">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+        </div>
+        <div class="page-title">
+            秋季爆款卫衣 转化对比实验 
+            <span class="status-badge">● 进行中</span>
+        </div>
+        <div style="flex: 1;"></div>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn btn-outline" style="color: red; border-color: red;">结束测试</button>
+            <button class="btn btn-primary" onclick="alert('即将把B组一页商店更新为正式主落地页')">应用变体 (发布一页商店)</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="info-card">
+            <div class="info-block">
+                <div class="info-label">核心优化指标</div>
+                <div class="info-value">支付转化率 (CVR)</div>
+            </div>
+            <div class="info-block">
+                <div class="info-label">实验周期</div>
+                <div class="info-value">2026-03-25 至今 (12 天)</div>
+            </div>
+            <div class="info-block">
+                <div class="info-label">总流量/访问</div>
+                <div class="info-value">12,450 访客</div>
+            </div>
+            <div class="info-block" style="border-left: 1px solid var(--border-color); padding-left: 24px;">
+                <div class="info-label" style="display:flex; align-items:center; gap: 8px;">
+                    数据置信度 
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="#666"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                </div>
+                <div class="info-value" style="color: var(--green); font-weight: bold; font-size: 18px;">94.2% <span style="font-size:12px; font-weight:normal; color:#666;">较高概率变体会优于对照组</span></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="winner-banner">
+                <div class="winner-icon">📈</div>
+                <div class="winner-text">
+                    <h3>B组（一页商店落地页）目前以 +18.4% 的转化率涨幅领先</h3>
+                    <p>基于当前访问量，变体 B组有 94.2% 的概率能够长期跑赢原有的 A组常规商品页面。</p>
+                </div>
+            </div>
+
+            <div class="card-title">
+                核心评估指标对比
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 250px;">落地页版本</th>
+                        <th style="width: 15%;">流量分布</th>
+                        <th style="width: 15%;">独立访客 (UV)</th>
+                        <th>支付转化率 (CVR) <span style="color:var(--primary-color);">★</span></th>
+                        <th>总订单数</th>
+                        <th>平均客单价 (AOV)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 12px; height: 12px; background: #cbd5e1; border-radius: 2px;"></div>
+                                <b>A组 (对照组)</b>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-left: 20px;">常规商城落地页</div>
+                        </td>
+                        <td>50%</td>
+                        <td>6,211</td>
+                        <td><span class="cell-highlight">2.65%</span></td>
+                        <td>165</td>
+                        <td>$42.50</td>
+                    </tr>
+                    <tr style="background: #f8faff;">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 12px; height: 12px; background: var(--primary-color); border-radius: 2px;"></div>
+                                <b>B组 (变体组)</b>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-left: 20px;">一页商店落地页</div>
+                        </td>
+                        <td>50%</td>
+                        <td>6,239</td>
+                        <td>
+                            <span class="cell-highlight" style="color: var(--primary-color);">3.14%</span>
+                            <span class="diff-tag diff-up">↑ 18.4%</span>
+                        </td>
+                        <td>196 <span class="diff-tag diff-up">↑ 18%</span></td>
+                        <td>$43.10 <span class="diff-tag diff-up">↑ 1.4%</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <div class="card-title">转化漏斗深入分析 (Funnel Checkout Flow)</div>
+            <div style="display: flex; margin-top: 32px;">
+                <div style="flex: 1;">
+                    <div class="funnel-row">
+                        <div class="funnel-label">到达落地页</div>
+                        <div class="funnel-bars">
+                            <div class="bar-container">
+                                <div class="bar-a" style="width: 100%;"><span class="bar-val">A组: 100% (6,211)</span></div>
+                                <div class="bar-b" style="width: 100%;"><span class="bar-val">B组: 100% (6,239)</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="funnel-row">
+                        <div class="funnel-label">添加购物车 / <br>点击立刻购买</div>
+                        <div class="funnel-bars">
+                            <div class="bar-container">
+                                <div class="bar-a" style="width: 42%;"><span class="bar-val">A组: 8.5% (528)</span></div>
+                                <div class="bar-b" style="width: 65%;"><span class="bar-val">B组: 13.1% (817) - 一页商店减少了操作步骤干扰</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="funnel-row">
+                        <div class="funnel-label">进入结账表单</div>
+                        <div class="funnel-bars">
+                            <div class="bar-container">
+                                <div class="bar-a" style="width: 30%;"><span class="bar-val">A组: 5.2% (323)</span></div>
+                                <div class="bar-b" style="width: 48%;"><span class="bar-val">B组: 8.7% (542)</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="funnel-row">
+                        <div class="funnel-label"><b>完成支付 (CVR)</b></div>
+                        <div class="funnel-bars">
+                            <div class="bar-container">
+                                <div class="bar-a" style="width: 20%;"><span class="bar-val">A组: 2.65% (165)</span></div>
+                                <div class="bar-b" style="width: 32%; background-color:#1b8552;"><span class="bar-val" style="color:#1b8552;">B组: 3.14% (196)</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 32px; padding: 16px; background: #fafafa; border: 1px dashed #ccc; border-radius: 4px; font-size: 13px; color: var(--text-secondary);">
+                💡 <b>数据洞察：</b> 我们注意到 B组（一页商店）在【加购/购买】环节的跌落率显著低于 A组原型环节。一页商店通过在同一页面直接呈现订单结算表单与商品介绍流，极大缩短了顾客的决策和跳转路径。
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一页商店 - A/B 测试管理</title>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-hover: #3a56d4;
+            --sidebar-bg: #f8f9fc;
+            --sidebar-color: #4e5d78;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-secondary: #8c98a4;
+            --border-color: #e2e8f0;
+            --success: #38c172;
+            --warning: #f6993f;
+            --danger: #e3342f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 侧边栏模拟 */
+        .sidebar {
+            width: 240px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .menu-list {
+            padding: 16px 0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .menu-item {
+            padding: 12px 24px;
+            color: var(--sidebar-color);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: #eef2fa;
+            color: var(--primary-color);
+        }
+
+        .menu-item.active {
+            background-color: #e4eaf9;
+            color: var(--primary-color);
+            border-right: 3px solid var(--primary-color);
+            font-weight: 500;
+        }
+
+        .menu-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+            background-color: currentColor;
+            mask-size: contain;
+            mask-repeat: no-repeat;
+            -webkit-mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+        }
+
+        /* 顶部导航 */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .top-nav {
+            height: 60px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 24px;
+            flex-shrink: 0;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #cbd5e0;
+        }
+
+        /* 主区域 */
+        .page-container {
+            flex-grow: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-outline {
+            background-color: white;
+            border-color: var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* 信息提示栏 */
+        .alert-box {
+            background-color: #eef2fa;
+            border: 1px solid #d3def7;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #3f51b5;
+        }
+
+        .alert-box strong {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        /* 标签切换 */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            font-size: 14px;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+        }
+
+        /* 数据卡片 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .filter-left {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-control {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            color: var(--text-main);
+            outline: none;
+            min-width: 200px;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* 表格样式 */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 16px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #fafbfc;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        td {
+            color: var(--text-main);
+        }
+
+        tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-running {
+            background-color: #e3fcef;
+            color: #1b8552;
+        }
+
+        .status-draft {
+            background-color: #f1f3f5;
+            color: #495057;
+        }
+
+        .status-ended {
+            background-color: #ffe8e6;
+            color: #d21c1c;
+        }
+
+        .winner-tag {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+
+        .actions a {
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-right: 12px;
+        }
+
+        .actions a:hover {
+            text-decoration: underline;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 16px;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            ShopBuilder admin
+        </div>
+        <div class="menu-list">
+            <div class="menu-item">主页</div>
+            <div class="menu-item">订单</div>
+            <div class="menu-item">商品</div>
+            <div class="menu-item">顾客</div>
+            <div class="menu-item">数据</div>
+            <div class="menu-item active">应用中心</div>
+            <div class="menu-item">店铺管理</div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="top-nav">
+            <div class="nav-actions">
+                <span style="font-size: 14px;">移动客户端</span>
+                <span class="avatar"></span>
+            </div>
+        </div>
+
+        <div class="page-container">
+            <!-- 导航面包屑区域 -->
+            <div style="margin-bottom: 16px; font-size: 14px; color: var(--text-secondary);">
+                应用中心 / <span style="color: var(--text-main); font-weight: 500;">一页商店 AB 测试</span>
+            </div>
+
+            <div class="page-header">
+                <h1>一页商店 A/B 测试</h1>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-outline" onclick="location.href='一页商店列表.html'">返回一页商店列表</button>
+                    <button class="btn btn-primary" onclick="location.href='2-AB测试-配置页.html'">+ 创建A/B测试</button>
+                </div>
+            </div>
+
+            <!-- 通知横幅 -->
+            <div class="alert-box">
+                <strong>💡 为什么需要对一页商店进行A/B测试？</strong>
+                通过为相同的受众分配不同的落地页（如一页商店落地页 与 传统标准的商品详情落地页），您可以客观对比两者的转化率、加购率及客单价，从而基于数据决策是否对爆款商品进行全量の一页商店化改造。
+            </div>
+
+            <!-- 统计概览板 -->
+            <div style="display: flex; gap: 24px; margin-bottom: 24px;">
+                <div class="card" style="flex: 1; margin: 0; padding: 20px;">
+                    <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">进行中的实验</div>
+                    <div style="font-size: 28px; font-weight: 600; color: #1b8552;">2 <span style="font-size: 14px; font-weight: 400; color: var(--text-secondary);">个并行中</span></div>
+                </div>
+                <div class="card" style="flex: 1; margin: 0; padding: 20px;">
+                    <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">已结束的实验</div>
+                    <div style="font-size: 28px; font-weight: 600;">14</div>
+                </div>
+                <div class="card" style="flex: 1; margin: 0; padding: 20px;">
+                    <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">总实验商品数</div>
+                    <div style="font-size: 28px; font-weight: 600;">8</div>
+                </div>
+            </div>
+
+            <div class="card" style="min-height: 400px;">
+                <div class="tabs">
+                    <div class="tab active">全部测试 (16)</div>
+                    <div class="tab">进行中 (2)</div>
+                    <div class="tab">草稿 (0)</div>
+                    <div class="tab">已结束 (14)</div>
+                </div>
+
+                <div class="filter-bar">
+                    <div class="filter-left">
+                        <input type="text" class="form-control" placeholder="按测试名称/关联商品搜索">
+                        <select class="form-control" style="min-width: 140px;">
+                            <option>所有状态</option>
+                            <option>进行中</option>
+                            <option>已结束</option>
+                            <option>草稿</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>测试名称</th>
+                                <th>状态</th>
+                                <th>关联商品</th>
+                                <th>核心指标进度</th>
+                                <th>流量分配</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 进行中的项 -->
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 500;">秋季爆款卫衣 转化对比 <span style="color:red; font-size: 10px; border:1px solid red; padding: 1px 4px; border-radius: 2px; margin-left: 4px;">HOT</span></div>
+                                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">B组较A组领先 +12.4%</div>
+                                </td>
+                                <td><span class="status-badge status-running">● 进行中</span></td>
+                                <td>Classic Hoodie 01</td>
+                                <td>
+                                    <div style="font-size: 13px;">访客量达标率: 65%</div>
+                                    <div style="width: 100px; height: 4px; background: #eee; border-radius: 2px; margin-top: 4px; overflow: hidden;">
+                                        <div style="width: 65%; height: 100%; background: var(--primary-color);"></div>
+                                    </div>
+                                </td>
+                                <td>50% / 50%</td>
+                                <td>2026-04-01</td>
+                                <td class="actions">
+                                    <a href="3-AB测试-数据看板.html">查看数据</a>
+                                    <a href="#" style="color: #666;">编辑</a>
+                                    <a href="#" style="color: #d21c1c;">停止分配</a>
+                                </td>
+                            </tr>
+                            <!-- 进行中的项 2 -->
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 500;">耳机落地页布局测试</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">数据尚未具有显著性差异</div>
+                                </td>
+                                <td><span class="status-badge status-running">● 进行中</span></td>
+                                <td>AirPro Noise Canceling</td>
+                                <td>
+                                    <div style="font-size: 13px;">访客量达标率: 12%</div>
+                                    <div style="width: 100px; height: 4px; background: #eee; border-radius: 2px; margin-top: 4px; overflow: hidden;">
+                                        <div style="width: 12%; height: 100%; background: var(--primary-color);"></div>
+                                    </div>
+                                </td>
+                                <td>A:33% / B:33% / C:34%</td>
+                                <td>2026-03-30</td>
+                                <td class="actions">
+                                    <a href="3-AB测试-数据看板.html">查看数据</a>
+                                    <a href="#" style="color: #666;">编辑</a>
+                                    <a href="#" style="color: #d21c1c;">停止分配</a>
+                                </td>
+                            </tr>
+                            <!-- 已结束的项 -->
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 500;">夏季短T 一页商店效率评估 </div>
+                                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">对照组 (标准页) 胜出</div>
+                                </td>
+                                <td><span class="status-badge status-ended">已结束</span></td>
+                                <td>Summer T-shirt Basic</td>
+                                <td>实验周期已满</td>
+                                <td>50% / 50%</td>
+                                <td>2026-02-14</td>
+                                <td class="actions">
+                                    <a href="3-AB测试-数据看板.html">查看报告</a>
+                                    <a href="#" style="color: #666;">设为全量(一键应用)</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 500;">鞋类配件交叉销售测试 <span class="winner-tag">🏆 变体组胜出</span></div>
+                                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">一页商店转化率大幅领先</div>
+                                </td>
+                                <td><span class="status-badge status-ended">已结束</span></td>
+                                <td>Sneaker Care Kit</td>
+                                <td>达到统计显著性</td>
+                                <td>20% / 80%</td>
+                                <td>2026-01-20</td>
+                                <td class="actions">
+                                    <a href="3-AB测试-数据看板.html">查看报告</a>
+                                    <span style="color: #999; font-size:12px;">已应用全量</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="pagination">
+                    <span>共 16 条</span>
+                    <button class="btn btn-outline" style="padding: 4px 8px;" disabled>&lt;</button>
+                    <button class="btn btn-outline" style="padding: 4px 8px; background: var(--primary-color); color: white;">1</button>
+                    <button class="btn btn-outline" style="padding: 4px 8px;">2</button>
+                    <button class="btn btn-outline" style="padding: 4px 8px;">&gt;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

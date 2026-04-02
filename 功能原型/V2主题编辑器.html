@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V2 主题编辑器</title>
+    <style>
+        :root {
+            --primary-color: #3860f4; /* 按钮蓝 */
+            --bg-color: #f6f6f7;
+            --border-color: #dfe3e8;
+            --sidebar-width: 300px;
+            --topbar-height: 56px;
+            --text-main: #202223;
+            --text-secondary: #6d7175;
+            --highlight-bg: #f0f2ff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* Icon Utility */
+        svg { display: block; fill: currentColor; }
+
+        /* --- Top Bar --- */
+        .topbar {
+            height: var(--topbar-height);
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            position: relative;
+            z-index: 100;
+        }
+
+        /* Top Left */
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .exit-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid var(--border-color); cursor: pointer; color: var(--text-secondary); }
+        .exit-btn:hover { background: #f4f6f8; }
+        .theme-name { font-weight: 500; font-size: 14px; }
+        .status-badge { background: #e3fcef; color: #1b8552; border-radius: 12px; padding: 2px 8px; font-size: 12px; display: flex; align-items: center; gap: 4px; }
+        .status-badge::before { content: ''; width: 6px; height: 6px; background: #1b8552; border-radius: 50%; }
+
+        /* Top Center (Page Selector) */
+        .page-selector { position: relative; }
+        .selector-btn { display: flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 4px; border: 1px solid transparent; cursor: pointer; font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .selector-btn:hover { background: #f4f6f8; }
+        
+        .selector-dropdown { position: absolute; top: calc(100% + 4px); left: 50%; transform: translateX(-50%); width: 280px; background: #fff; border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none; flex-direction: column; }
+        .page-selector:hover .selector-dropdown { display: flex; } /* Simple hover for demo */
+        .dropdown-search { padding: 12px; border-bottom: 1px solid var(--border-color); }
+        .dropdown-search input { width: 100%; padding: 8px 12px; border: 1px solid #c9cccf; border-radius: 4px; outline: none; font-size: 13px; }
+        .dropdown-search input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(56, 96, 244, 0.2); }
+        
+        .dropdown-list { max-height: 400px; overflow-y: auto; padding: 8px 0; }
+        .dropdown-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; font-size: 14px; color: var(--text-main); cursor: pointer; }
+        .dropdown-item:hover { background: #f4f6f8; }
+        .dropdown-item.active { background: var(--highlight-bg); color: var(--primary-color); }
+        .dropdown-item svg { width: 16px; height: 16px; color: var(--text-secondary); }
+        .dropdown-item.active svg { color: var(--primary-color); }
+
+        /* Top Right */
+        .topbar-right { display: flex; align-items: center; gap: 16px; }
+        .tool-btn { color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 4px; border-radius: 4px; padding: 4px; }
+        .tool-btn:hover { color: var(--text-main); background: #f4f6f8; }
+        .save-btn { background: var(--primary-color); color: #fff; font-weight: 500; font-size: 14px; padding: 6px 16px; border-radius: 4px; border: none; cursor: pointer; }
+        .save-btn:hover { background: #2f52d6; }
+
+        /* --- Main Layout --- */
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+
+        /* --- Preview Area --- */
+        .preview-area { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; overflow: hidden; background: #202223;}
+        .preview-frame { width: 100%; height: 100%; max-width: 1440px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; border-radius: 4px;}
+        
+        /* Fake Shop Content inside frame */
+        .shop-header { height: 40px; background: #000; color: #fff; display: flex; justify-content: flex-end; align-items: center; padding: 0 40px; font-size: 12px; }
+        .shop-nav { height: 70px; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid #eee; position: relative;}
+        .shop-nav .logo { font-size: 24px; font-weight: 600; letter-spacing: 2px; }
+        .shop-nav .icons { position: absolute; right: 40px; display: flex; gap: 20px;}
+        
+        .shop-body { flex:1; display: flex; align-items: stretch; background: #fff;}
+        .shop-img { flex: 1; background: url('https://images.unsplash.com/photo-1629363447957-bc0c102a0ac9?w=800&q=80') center/contain no-repeat; margin: 40px;}
+        .shop-details { flex: 1; padding: 40px 80px 40px 0;}
+        .s-title { font-size: 28px; margin-bottom: 16px; font-weight: 400;}
+        .s-price { font-size: 18px; margin-bottom: 24px; font-weight: 500; }
+        .s-price span { color: #d11; font-size: 14px; margin-left: 12px; }
+        .s-variants { display: flex; gap: 12px; margin-bottom: 24px;}
+        .s-var { border: 1px solid #ccc; padding: 8px 16px; font-size: 13px; cursor: pointer;}
+        .s-var.active { border-color: #d11; background: #111; color: #fff; }
+        .s-qty { display: flex; border: 1px solid #ccc; width: fit-content; margin-bottom: 24px;}
+        .s-qty div { width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .s-qty div:nth-child(2) { border-left: 1px solid #ccc; border-right: 1px solid #ccc; }
+        .s-stock { height: 6px; background: #eee; border-radius: 3px; margin-bottom: 8px; position:relative;}
+        .s-stock div { height: 100%; width: 90%; background: #d11; border-radius: 3px;}
+        .s-stock-text { font-size: 12px; color: var(--text-secondary); margin-bottom: 24px; display: flex; justify-content: space-between;}
+        .s-btn-add { background: #d11; color: #fff; width: 100%; height: 48px; display: flex; justify-content: center; align-items: center; font-weight: 600; margin-bottom: 12px; cursor: pointer;}
+        .s-btn-pp { background: #ffc439; width: 100%; height: 48px; display: flex; justify-content: center; align-items: center; border-radius: 4px; cursor: pointer;}
+
+        /* --- Right Sidebar --- */
+        .sidebar { width: var(--sidebar-width); background: #fff; border-left: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 10; position:relative;}
+        
+        .sidebar-header { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header h2 { font-size: 14px; font-weight: 600; }
+        .action-link { font-size: 13px; color: var(--primary-color); cursor: pointer; display: flex; align-items: center; gap: 4px;}
+        .action-link:hover { text-decoration: underline; }
+
+        .sidebar-content { flex: 1; overflow-y: auto; padding-bottom: 60px;}
+        
+        /* Section Items */
+        .section-group { border-bottom: 1px solid #f4f6f8; }
+        .section-header { padding: 12px 16px; display: flex; align-items: center; cursor: pointer; transition: 0.2s;}
+        .section-header:hover { background: #f9fafb; }
+        .section-icon { width: 16px; height: 16px; margin-right: 8px; color: var(--text-secondary); display: flex; align-items: center; justify-content: center;}
+        .section-title { font-size: 13px; font-weight: 600; flex: 1; }
+        .section-actions { display: flex; gap: 8px; opacity: 0; transition: 0.2s; color: var(--text-secondary);}
+        .section-header:hover .section-actions { opacity: 1; }
+        .section-actions svg { cursor: pointer; }
+        .section-actions svg:hover { color: var(--text-main); }
+
+        /* Block Items */
+        .block-list { padding-bottom: 8px; }
+        .block-item { padding: 8px 16px 8px 40px; display: flex; align-items: center; font-size: 13px; cursor: pointer; position: relative; }
+        .block-item:hover { background: #f9fafb; }
+        .block-item.active { background: var(--highlight-bg); position: relative;}
+        .block-item.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--primary-color); }
+        .block-icon { width: 14px; height: 14px; margin-right: 8px; color: var(--text-secondary);opacity: 0.7;}
+        .block-title { flex: 1; color: var(--text-main);}
+        .block-hide { opacity: 0; color: var(--text-secondary); cursor: pointer;}
+        .block-item:hover .block-hide { opacity: 1; }
+        .block-hide:hover { color: var(--text-main); }
+
+        .add-block { padding: 8px 16px 8px 40px; font-size: 13px; color: var(--primary-color); display: flex; align-items: center; gap: 8px; cursor: pointer;}
+        .add-block:hover { text-decoration: underline; }
+
+        /* Global Settings Footer */
+        .global-settings { position: absolute; bottom: 0; left: 0; right: 0; border-top: 1px solid var(--border-color); background: #fff; padding: 16px; display: flex; align-items: center; gap: 8px; cursor: pointer;}
+        .global-settings:hover { background: #f9fafb; }
+        .global-settings span { font-size: 14px; font-weight: 500;}
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <div class="exit-btn">
+                <svg viewBox="0 0 20 20" width="14" height="14"><path d="M11.414 10l4.293-4.293a.999.999 0 10-1.414-1.414L10 8.586 5.707 4.293a.999.999 0 10-1.414 1.414L8.586 10l-4.293 4.293a.999.999 0 101.414 1.414L10 11.414l4.293 4.293a.997.997 0 001.414 0 .999.999 0 000-1.414L11.414 10z" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+            </div>
+            <span class="theme-name">Brooklyn</span>
+            <span class="status-badge">实时</span>
+        </div>
+
+        <div class="page-selector">
+            <div class="selector-btn">
+                商品详情页
+                <svg viewBox="0 0 20 20" width="16" height="16"><path d="M5.293 7.293a.999.999 0 011.414 0L10 10.586l3.293-3.293a.999.999 0 111.414 1.414l-4 4a.997.997 0 01-1.414 0l-4-4a.999.999 0 010-1.414z"/></svg>
+            </div>
+            
+            <div class="selector-dropdown">
+                <div class="dropdown-search">
+                    <input type="text" placeholder="搜索">
+                </div>
+                <div class="dropdown-list">
+                    <div class="dropdown-item">
+                        <svg viewBox="0 0 20 20"><path d="M10 2L2 9h2v9h4v-6h4v6h4V9h2L10 2z"/></svg> 首页
+                    </div>
+                    <div class="dropdown-item active">
+                        <svg viewBox="0 0 20 20"><path d="M3 4a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2H3zm1 2h4v4H4V6zm6 0h5v2h-5V6zm5 4h-5v2h5v-2zm-6 2H4v-2h4v2z" fill-rule="evenodd"/></svg> 商品详情页
+                    </div>
+                    <div class="dropdown-item">
+                        <svg viewBox="0 0 20 20"><path d="M5 4H2v2h2l1.625 6.5A2 2 0 007.567 14H16v-2H7.567L7 10h9.32a2 2 0 001.94-1.515L19 5H5.78L5 4zm3 13a2 2 0 11-4 0 2 2 0 014 0zm9 0a2 2 0 11-4 0 2 2 0 014 0z"/></svg> 购物车页
+                    </div>
+                    <div class="dropdown-item">
+                        <svg viewBox="0 0 20 20"><path d="M15.414 5h-4.828L7.56 2.5a2 2 0 00-1.414-.5H3a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2h-1.586zM13 11a3 3 0 11-6 0 3 3 0 016 0z" fill-rule="evenodd"/></svg> 结账页
+                    </div>
+                    <div class="dropdown-item">
+                        <svg viewBox="0 0 20 20"><path d="M8 2a6 6 0 00-4.243 10.243l-2.464 2.464a.999.999 0 101.414 1.414l2.464-2.464A6 6 0 108 2zm0 2a4 4 0 110 8 4 4 0 010-8z"/></svg> 搜索页
+                    </div>
+                    <div class="dropdown-item">
+                        <svg viewBox="0 0 20 20"><path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm2 0v10h12V5H4zm8 2h2v6h-2V7zm-6 0h4v2H6V7zm0 4h4v2H6v-2z" fill-rule="evenodd"/></svg> 全部分类页
+                    </div>
+                </div>
+                <div style="border-top: 1px solid var(--border-color); padding: 8px;">
+                    <button style="width: 100%; border: none; background: #f4f6f8; color: var(--primary-color); font-weight: 600; font-size: 13px; padding: 10px; border-radius: 4px; cursor: pointer;" onclick="document.getElementById('templateModal').style.display='flex'">
+                        管理多模板
+                    </button>
+                    <script>
+                        // Expose globally
+                        window.openTemplateModal = function() {
+                            document.getElementById('templateModal').style.display='flex';
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <div class="tool-btn" title="预览页面">
+                <svg viewBox="0 0 20 20" width="18" height="18"><path d="M10 4.5C5.523 4.5 2 10 2 10s3.523 5.5 8 5.5 8-5.5 8-5.5-3.523-5.5-8-5.5zM10 13a3 3 0 110-6 3 3 0 010 6zm0-1.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/></svg>
+            </div>
+            <div class="tool-btn" title="桌面端视图" style="margin-left:8px; color: var(--text-main);">
+                <svg viewBox="0 0 20 20" width="18" height="18"><path d="M2.5 3A1.5 1.5 0 001 4.5v9A1.5 1.5 0 002.5 15h6v1h-2v2h7v-2h-2v-1h6a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0017.5 3h-15zm.5 2h14v7H3V5z" fill-rule="evenodd"/></svg>
+                <svg viewBox="0 0 20 20" width="12" height="12"><path d="M5.293 7.293a.999.999 0 011.414 0L10 10.586l3.293-3.293a.999.999 0 111.414 1.414l-4 4a.997.997 0 01-1.414 0l-4-4a.999.999 0 010-1.414z"/></svg>
+            </div>
+            <div style="width: 1px; height: 16px; background: var(--border-color); margin: 0 4px;"></div>
+            <div class="tool-btn" style="opacity: 0.3; cursor: not-allowed;" title="撤销">
+                <svg viewBox="0 0 20 20" width="18" height="18"><path d="M8 5a2 2 0 012-2h4V1L18 6l-4 5V9h-4a1 1 0 00-1 1v5H7v-5a3 3 0 011-5z" transform="matrix(-1 0 0 1 20 0)"/></svg>
+            </div>
+            <div class="tool-btn" style="opacity: 0.3; cursor: not-allowed;" title="重做">
+                <svg viewBox="0 0 20 20" width="18" height="18"><path d="M8 5a2 2 0 012-2h4V1L18 6l-4 5V9h-4a1 1 0 00-1 1v5H7v-5a3 3 0 011-5z"/></svg>
+            </div>
+            <button class="save-btn">保存</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        
+        <!-- Preview Area -->
+        <div class="preview-area">
+            <div class="preview-frame">
+                <!-- Top Announcement Fake -->
+                <div class="shop-header">
+                    ♥ Free Shipping On Orders Over $50
+                </div>
+                
+                <!-- Nav Fake -->
+                <div class="shop-nav">
+                    <div class="logo">SPECIMIEN</div>
+                    <div class="icons">
+                        <svg viewBox="0 0 20 20" width="20" height="20" fill="#333"><path d="M8 2a6 6 0 00-4.243 10.243l-2.464 2.464a.999.999 0 101.414 1.414l2.464-2.464A6 6 0 108 2zm0 2a4 4 0 110 8 4 4 0 010-8z"/></svg>
+                        <svg viewBox="0 0 20 20" width="20" height="20" fill="#333"><path d="M10 4.5A2.5 2.5 0 007.5 7v1h5V7A2.5 2.5 0 0010 4.5zm-4.5 3h9a1.5 1.5 0 011.5 1.5v8a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 014 17v-8A1.5 1.5 0 015.5 7.5zM6 10a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z"/></svg>
+                    </div>
+                </div>
+
+                <!-- Product Detail Fake -->
+                <div class="shop-body">
+                    <div class="shop-img">
+                        <!-- BG Image handles the graphic -->
+                    </div>
+                    <div class="shop-details">
+                        <div class="s-title">Self Tanner Body Lotion</div>
+                        <div class="s-price">USD $41 <span>Save 49%</span></div>
+                        <div style="font-size: 13px; margin-bottom: 8px;">Color</div>
+                        <div class="s-variants">
+                            <div class="s-var active">Fair to Medium</div>
+                            <div class="s-var">Medium to Dark</div>
+                        </div>
+                        <div style="font-size: 13px; margin-bottom: 8px; text-align: center; width: 120px;">Quantity</div>
+                        <div class="s-qty" style="margin: 0 auto 24px;">
+                            <div>-</div>
+                            <div>1</div>
+                            <div>+</div>
+                        </div>
+                        <div class="s-stock"><div></div></div>
+                        <div class="s-stock-text">
+                            <span>Only <b>1%</b> items left in stock</span>
+                            <span style="border-radius:2px; background:#d11; color:#fff; padding: 2px 6px;">Tight Inventory</span>
+                        </div>
+
+                        <div style="background: #e6f6ec; border: 1px solid #b7eb8f; color: #1b8552; padding: 6px; text-align: center; border-radius: 4px; font-size: 12px; font-weight: 500; margin-bottom: 24px; display: flex; justify-content: center; align-items: center; gap: 6px;">
+                            <svg viewBox="0 0 20 20" width="14" height="14"><path d="M10 4.5C5.523 4.5 2 10 2 10s3.523 5.5 8 5.5 8-5.5 8-5.5-3.523-5.5-8-5.5zM10 13a3 3 0 110-6 3 3 0 010 6z"/></svg>
+                            1063 visitors currently looking at this product
+                        </div>
+
+                        <div style="font-size: 13px; color: #555; text-align: center; line-height: 2; margin-bottom: 24px;">
+                            🌍 Free worldwide shipping<br>
+                            📦 Free returns<br>
+                            🌿 Sustainably made<br>
+                            🔒 Secure payments
+                        </div>
+
+                        <div class="s-btn-add">ADD TO CART</div>
+                        <div class="s-btn-pp">
+                            <svg viewBox="0 0 124 33" height="20" style="margin-top: 2px;"><path fill="#003087" d="M46.211 6.749h-6.839a.95.95 0 00-.939.802l-2.766 17.537a.57.57 0 00.564.658h3.265a.95.95 0 00.939-.803l.746-4.73a.95.95 0 01.938-.803h2.165c4.505 0 7.105-2.18 7.784-6.5.306-1.89.013-3.375-.872-4.415-1.149-1.338-3.004-1.746-4.985-1.746zM47 13.154c-.374 2.454-2.249 2.454-4.062 2.454h-1.032l1.034-6.557c.43-.027.853-.054 1.352-.054 1.149 0 2.227.107 2.764.723.385.428.528 1.042.327 2.227l-.383 1.207zM66.368 6.749h-3.414c-.456 0-.853.32-.938.749l-.027.135-1.15 4.881-2.062-5.07a1.006 1.006 0 00-.912-.695H54.21a.571.571 0 00-.51 2.383l4.314 5.918-1.928 12.162a.57.57 0 00.563.658h3.576a.95.95 0 00.938-.802l1.636-10.26 5.865-8.625a.57.57 0 000-1.434h0zM83.834 6.749h-6.84a.95.95 0 00-.938.802l-2.766 17.537a.57.57 0 00.564.658h3.266a.95.95 0 00.938-.803l.747-4.73a.95.95 0 01.938-.803h2.164c4.506 0 7.105-2.18 7.785-6.5.305-1.89.012-3.375-.872-4.415-1.149-1.338-3.003-1.746-4.986-1.746zm.789 6.405c-.374 2.454-2.249 2.454-4.062 2.454h-1.031l1.033-6.557c.431-.027.854-.054 1.353-.054 1.15 0 2.226.107 2.763.723.386.428.528 1.042.328 2.227l-.384 1.207zM97.228 18.003a2.333 2.333 0 01-1.286-.349l-.536 3.415h3.295a.951.951 0 00.939-.803l1.9-12.067h3.354a.571.571 0 100-1.141h-8.093c-2.384 0-4.045.938-4.636 2.628-.294.885-.294 1.823 0 2.76.241.697.697 1.34 1.393 1.85a4.332 4.332 0 002.546.776l.161-1.018a1.69 1.69 0 01.964-1.5 2.158 2.158 0 011.606-.107 1.207 1.207 0 01.697.804.887.887 0 010 .857 1.139 1.139 0 01-.643.536 1.77 1.77 0 01-.67.135h0zM8.349 6.883h-5.04c-.375 0-.696.268-.75.643L.012 23.35a.465.465 0 00.457.536h3.402a.698.698 0 00.67-.536l1.232-7.854a.695.695 0 01.67-.536h2.145c3.344 0 5.275-1.609 5.784-4.825.215-1.42.027-2.546-.643-3.323-.884-1.045-2.224-1.393-3.7-1.393h-1.68z"/><path fill="#009CDE" d="M12.923 11.127H11c-.563 0-1.018.375-1.125.938L8.643 19.892l-.161 1.018a.698.698 0 00.67.804H12.5c.348 0 .642-.268.696-.616l.482-2.922h0l.081-.616c.053-.322.348-.563.67-.563h.777c2.519 0 4.019-1.233 4.422-3.645.161-1.0180-1.85-.456-2.412a3.78 3.78 0 00-2.412-1.394h-.481c-1.42 0-2.52-.08-3.814-.5zm83.921 7.21a2.894 2.894 0 01-1.286-.295L95.049 21.4a.951.951 0 00-.911.803L93.736 24.83a.57.57 0 00.563.67h3.32c4.072 0 6.64-1.932 7.283-6.202.268-1.745.026-3.13-.777-4.093a4.027 4.027 0 00-3.322-1.26l-1.635 10.42a1.042 1.042 0 01-1.017.859h-2.118a.64.64 0 01-.643-.537zl.295-1.85h2.14c2.251 0 3.537-1.125 3.859-3.216a2.012 2.012 0 00-.777-1.956c-.616-.483-1.447-.697-2.733-.697h-1.34l-.884 5.603zM113.882 6.749h-3.376c-.455 0-.857.321-.937.749L106.965 24.16c-.054.348.187.67.535.67h3.296a.95.95 0 00.938-.803l2.546-16.516a.57.57 0 00-.563-.658h.165z"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Sidebar Config -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>商品详情页</h2>
+                <div class="action-link">
+                    <svg viewBox="0 0 20 20" width="16" height="16"><path d="M4.293 8.293a.999.999 0 011.414 0L10 12.586l4.293-4.293a.999.999 0 111.414 1.414l-5 5a.997.997 0 01-1.414 0l-5-5a.999.999 0 010-1.414z"/></svg> 
+                    折叠
+                </div>
+            </div>
+
+            <div class="sidebar-content">
+                
+                <!-- Section: 公告栏 -->
+                <div class="section-group">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <!-- Minus icon -->
+                            <svg viewBox="0 0 20 20"><path d="M5 9h10v2H5V9z"/></svg>
+                        </div>
+                        <div class="section-title">公告栏</div>
+                    </div>
+                    <div class="block-list">
+                        <div class="block-item">
+                            <div class="block-icon"><svg viewBox="0 0 20 20"><path d="M10 2l1.69 3.425 3.774.549-2.732 2.663.645 3.763L10 10.61l-3.377 1.79.645-3.763L4.536 5.974l3.774-.549L10 2z"/></svg></div>
+                            <div class="block-title">公告</div>
+                            <div class="block-hide"><svg viewBox="0 0 20 20" width="16" height="16"><path d="M10 4.5C5.523 4.5 2 10 2 10s3.523 5.5 8 5.5 8-5.5 8-5.5-3.523-5.5-8-5.5zM10 13a3 3 0 110-6 3 3 0 010 6z"/></svg></div>
+                        </div>
+                        <div class="block-item active">
+                            <div class="block-icon"><svg viewBox="0 0 20 20"><path d="M10 2l1.69 3.425 3.774.549-2.732 2.663.645 3.763L10 10.61l-3.377 1.79.645-3.763L4.536 5.974l3.774-.549L10 2z"/></svg></div>
+                            <div class="block-title">公告</div>
+                            <div class="block-hide"><svg viewBox="0 0 20 20" width="16" height="16"><path d="M10 4.5C5.523 4.5 2 10 2 10s3.523 5.5 8 5.5 8-5.5 8-5.5-3.523-5.5-8-5.5zM10 13a3 3 0 110-6 3 3 0 010 6z"/></svg></div>
+                        </div>
+                        <div class="add-block">
+                            <svg viewBox="0 0 20 20" width="16" height="16"><path d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"/></svg>
+                            添加内容 (2/3)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: 导航 -->
+                <div class="section-group">
+                    <div class="section-header">
+                        <div class="section-icon"><svg viewBox="0 0 20 20"><path d="M5 9h10v2H5V9z"/></svg></div>
+                        <div class="section-title">导航</div>
+                    </div>
+                    <div class="block-list">
+                        <div class="add-block">
+                            <svg viewBox="0 0 20 20" width="16" height="16"><path d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"/></svg>
+                            添加内容 (0/15)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: 商品详情 -->
+                <div class="section-group" style="padding-bottom: 24px;">
+                    <div class="section-header">
+                        <div class="section-icon"><svg viewBox="0 0 20 20"><path d="M5 9h10v2H5V9z"/></svg></div>
+                        <div class="section-title">商品详情</div>
+                        <div class="section-actions" style="opacity: 1;">
+                            <svg viewBox="0 0 20 20" width="16" height="16"><path d="M10 4.5C5.523 4.5 2 10 2 10s3.523 5.5 8 5.5 8-5.5 8-5.5-3.523-5.5-8-5.5zM10 13a3 3 0 110-6 3 3 0 010 6z"/></svg>
+                            <svg viewBox="0 0 20 20" width="16" height="16"><path d="M7 2a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4zM7 8a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4zM7 14a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z"/></svg>
+                        </div>
+                    </div>
+                    <div class="block-list">
+                        <!-- Blocks -->
+                        <div class="block-item">
+                            <div class="block-icon"><svg viewBox="0 0 20 20"><path d="M10 2l1.69 3.425 3.774.549-2.732 2.663.645 3.763L10 10.61l-3.377 1.79.645-3.763L4.536 5.974l3.774-.549L10 2z"/></svg></div>
+                            <div class="block-title">标题</div>
+                        </div>
+                        <div class="block-item">
+                            <div class="block-icon"><svg viewBox="0 0 20 20"><path d="M10 2l1.69 3.425 3.774.549-2.732 2.663.645 3.763L10 10.61l-3.377 1.79.645-3.763L4.536 5.974l3.774-.549L10 2z"/></svg></div>
+                            <div class="block-title">副标题</div>
+                        </div>
+                        <div class="block-item">
+                            <div class="block-icon"><svg viewBox="0 0 20 20"><path d="M10 2l1.69 3.425 3.774.549-2.732 2.663.645 3.763L10 10.61l-3.377 1.79.645-3.763L4.536 5.974l3.774-.549L10 2z"/></svg></div>
+                            <div class="block-title">评论星级</div>
+                        </div>
+                        <div class="block-item">
+                            <div class="block-icon"><svg viewBox="0 0 20 20"><path d="M10 2l1.69 3.425 3.774.549-2.732 2.663.645 3.763L10 10.61l-3.377 1.79.645-3.763L4.536 5.974l3.774-.549L10 2z"/></svg></div>
+                            <div class="block-title">价格</div>
+                        </div>
+                        <div class="block-item">
+                            <div class="block-icon"><svg viewBox="0 0 20 20"><path d="M10 2l1.69 3.425 3.774.549-2.732 2.663.645 3.763L10 10.61l-3.377 1.79.645-3.763L4.536 5.974l3.774-.549L10 2z"/></svg></div>
+                            <div class="block-title">分期付款提示</div>
+                        </div>
+                        <div class="block-item">
+                            <div class="block-icon"><svg viewBox="0 0 20 20"><path d="M10 2l1.69 3.425 3.774.549-2.732 2.663.645 3.763L10 10.61l-3.377 1.79.645-3.763L4.536 5.974l3.774-.549L10 2z"/></svg></div>
+                            <div class="block-title">变体选择器</div>
+                        </div>
+                        <div class="block-item">
+                            <div class="block-icon"><svg viewBox="0 0 20 20"><path d="M10 2l1.69 3.425 3.774.549-2.732 2.663.645 3.763L10 10.61l-3.377 1.79.645-3.763L4.536 5.974l3.774-.549L10 2z"/></svg></div>
+                            <div class="block-title">数量控制器</div>
+                        </div>
+                        <div class="block-item">
+                            <div class="block-icon"><svg viewBox="0 0 20 20"><path d="M10 2l1.69 3.425 3.774.549-2.732 2.663.645 3.763L10 10.61l-3.377 1.79.645-3.763L4.536 5.974l3.774-.549L10 2z"/></svg></div>
+                            <div class="block-title">访客计数器</div>
+                        </div>
+                        <div class="block-item">
+                            <div class="block-icon"><svg viewBox="0 0 20 20"><path d="M10 2l1.69 3.425 3.774.549-2.732 2.663.645 3.763L10 10.61l-3.377 1.79.645-3.763L4.536 5.974l3.774-.549L10 2z"/></svg></div>
+                            <div class="block-title">售卖特点</div>
+                        </div>
+                        <div class="block-item">
+                            <div class="block-icon"><svg viewBox="0 0 20 20"><path d="M10 2l1.69 3.425 3.774.549-2.732 2.663.645 3.763L10 10.61l-3.377 1.79.645-3.763L4.536 5.974l3.774-.549L10 2z"/></svg></div>
+                            <div class="block-title">EXTRA优惠码</div>
+                        </div>
+                        <div class="block-item">
+                            <div class="block-icon"><svg viewBox="0 0 20 20"><path d="M10 2l1.69 3.425 3.774.549-2.732 2.663.645 3.763L10 10.61l-3.377 1.79.645-3.763L4.536 5.974l3.774-.549L10 2z"/></svg></div>
+                            <div class="block-title">支付按钮</div>
+                        </div>
+                        
+                        <div class="add-block">
+                            <svg viewBox="0 0 20 20" width="16" height="16"><path d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"/></svg>
+                            添加内容 (14/50)
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sticky Footer -->
+            <div class="global-settings">
+                <svg viewBox="0 0 20 20" width="18" height="18" fill="var(--text-secondary)"><path d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.948zM10 13a3 3 0 100-6 3 3 0 000 6z"/></svg>
+                <span>全局配置</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL INJECTION (Simplified for V2) -->
+    <style>
+        .v2-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000;
+            display: none; justify-content: center; align-items: flex-start; padding-top: 80px;
+        }
+        .v2-modal {
+            background: #fff; border-radius: 8px; width: 800px; max-height: calc(100vh - 160px);
+            display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .v2-modal-header {
+            padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;
+        }
+        .v2-modal-title { font-size: 16px; font-weight: 600; }
+        .v2-modal-close { cursor: pointer; color: var(--text-secondary); width: 24px; height: 24px; display:flex; justify-content:center; align-items:center; border-radius:4px;}
+        .v2-modal-close:hover { background: #f4f6f8; color: var(--text-main); }
+        .v2-modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+        
+        .v2-toolbar { display: flex; justify-content: space-between; margin-bottom: 16px; align-items: center;}
+        .v2-search { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; width: 240px; font-size: 13px; outline: none; }
+        .v2-search:focus { border-color: var(--primary-color); }
+        .v2-btn { padding: 8px 16px; font-size: 13px; font-weight: 500; border-radius: 4px; cursor: pointer; border: 1px solid transparent; }
+        .v2-btn-primary { background: var(--primary-color); color: #fff; }
+        .v2-btn-primary:hover { background: #2f52d6; }
+        .v2-btn-outline { background: #fff; border-color: var(--border-color); color: var(--text-main); }
+        
+        .v2-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;}
+        .v2-table th, .v2-table td { padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
+        .v2-table th { background: #f9fafb; font-weight: 500; color: var(--text-secondary); }
+        .v2-sys-tag { background: #f4f6f8; padding: 2px 6px; border-radius: 4px; font-size: 11px; color: var(--text-secondary); margin-left:8px;}
+        .v2-tpl-action a { color: var(--primary-color); text-decoration: none; margin-right: 12px; font-weight: 500;}
+        .v2-tpl-action a:hover { text-decoration: underline; }
+        .v2-tpl-action a.danger { color: #d11; }
+
+        .toast-simulate { position: fixed; top: -60px; left: 50%; transform: translateX(-50%); background: #202223; color: #fff; padding: 12px 24px; border-radius: 6px; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: top 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);}
+        .toast-simulate.show { top: 24px; }
+    </style>
+
+    <div class="v2-modal-overlay" id="templateModal">
+        <div class="v2-modal">
+            <div class="v2-modal-header">
+                <div class="v2-modal-title">管理多详情页模板</div>
+                <div class="v2-modal-close" onclick="document.getElementById('templateModal').style.display='none'">
+                    <svg viewBox="0 0 20 20" width="16" height="16"><path d="M11.414 10l4.293-4.293a.999.999 0 10-1.414-1.414L10 8.586 5.707 4.293a.999.999 0 10-1.414 1.414L8.586 10l-4.293 4.293a.999.999 0 101.414 1.414L10 11.414l4.293 4.293a.997.997 0 001.414 0 .999.999 0 000-1.414L11.414 10z" fill-rule="evenodd" clip-rule="evenodd"/></svg>
+                </div>
+            </div>
+            <div class="v2-modal-body">
+                <div class="v2-toolbar">
+                    <input type="text" class="v2-search" placeholder="搜索模板...">
+                    <div style="display:flex; gap: 8px;">
+                        <button class="v2-btn v2-btn-outline" onclick="triggerBatchDelete()">批量删除</button>
+                        <button class="v2-btn v2-btn-primary" onclick="showNewTpl()">+ 新建模板</button>
+                    </div>
+                </div>
+
+                <div style="border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden;">
+                    <table class="v2-table">
+                        <thead>
+                            <tr>
+                                <th width="40"><input type="checkbox" style="cursor: pointer;"></th>
+                                <th>模板名称</th>
+                                <th>已应用商品总数</th>
+                                <th width="160">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="checkbox" disabled></td>
+                                <td>默认商品详情页模板 <span class="v2-sys-tag">系统默认</span></td>
+                                <td>1,204 件</td>
+                                <td class="v2-tpl-action">
+                                    <a href="#">编辑</a>
+                                    <a href="javascript:void(0)" onclick="triggerCopyCode()">复制代码</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" style="cursor: pointer;"></td>
+                                <td>夏季爆款Tee独立模板</td>
+                                <td>12 件</td>
+                                <td class="v2-tpl-action">
+                                    <a href="#">编辑</a>
+                                    <a href="javascript:void(0)" onclick="triggerCopyCode()">复制代码</a>
+                                    <a href="javascript:void(0)" class="danger" onclick="triggerDelete(this)">删除</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" style="cursor: pointer;"></td>
+                                <td>鞋类交叉销售详情页</td>
+                                <td>86 件</td>
+                                <td class="v2-tpl-action">
+                                    <a href="#">编辑</a>
+                                    <a href="javascript:void(0)" onclick="triggerCopyCode()">复制代码</a>
+                                    <a href="javascript:void(0)" class="danger" onclick="triggerDelete(this)">删除</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple Toast -->
+    <div id="v2Toast" class="toast-simulate">
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="#38c172"><path d="M10 20a10 10 0 110-20 10 10 0 010 20zm-1.39-5.11l6.04-6.04-1.42-1.42-4.62 4.62-2.22-2.22-1.42 1.42 3.64 3.64z"/></svg>
+        <span id="v2ToastMsg">复制 Json 代码成功，已存入剪贴板！</span>
+    </div>
+
+    <script>
+        function triggerCopyCode() {
+            document.getElementById('v2ToastMsg').innerText = "复制 Json 代码成功，已存入剪贴板！";
+            var toast = document.getElementById('v2Toast');
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 3000);
+        }
+
+        function triggerDelete(el) {
+            if(confirm("确定要删除该模板吗？相关商品将回退到默认模板。")) {
+                el.closest('tr').remove();
+                document.getElementById('v2ToastMsg').innerText = "删除成功！";
+                var toast = document.getElementById('v2Toast');
+                toast.classList.add('show');
+                setTimeout(function() { toast.classList.remove('show'); }, 3000);
+            }
+        }
+
+        function triggerBatchDelete() {
+            alert("在批量模式下将统一删除已勾选的可变模板");
+        }
+
+        function showNewTpl() {
+            var answer = prompt("新建详情页模板\n支持：1. 从已有模板复制  2. 粘贴JSON代码\n\n请输入新模板名称：", "自定义模板 1");
+            if (answer) {
+                var tbody = document.querySelector('.v2-table tbody');
+                var tr = document.createElement('tr');
+                tr.innerHTML = '<td><input type="checkbox" style="cursor: pointer;"></td><td>' + answer + '</td><td>0 件</td><td class="v2-tpl-action"><a href="#">编辑</a><a href="javascript:void(0)" onclick="triggerCopyCode()">复制代码</a><a href="javascript:void(0)" class="danger" onclick="triggerDelete(this)">删除</a></td>';
+                tbody.appendChild(tr);
+            }
+        }
+    </script>
+</body>
+</html>

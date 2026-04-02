@@ -1072,6 +1072,25 @@
                                     </div>
                                 </div>
 
+                                <style>
+                                    .action-icons {
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 12px;
+                                    }
+
+                                    .action-icons a {
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        transition: opacity 0.2s;
+                                    }
+
+                                    .action-icons a:hover {
+                                        opacity: 0.7;
+                                    }
+                                </style>
+
                                 <table class="custom-table" id="tplTable">
                                     <thead>
                                         <tr>
@@ -1084,48 +1103,52 @@
                                     <tbody>
                                         <tr>
                                             <td><input type="checkbox" class="checkbox" disabled></td>
-                                            <td>默认商品详情页模板 <span class="system-tag">系统</span></td>
+                                            <td><a href="#"
+                                                    style="color:var(--primary-color); text-decoration:none; cursor:pointer; font-weight:500;"
+                                                    title="点击配置模板">默认商品详情页模板</a> <span class="system-tag">系统</span></td>
                                             <td>1,204 件</td>
-                                            <td>
-                                                <a href="#"
-                                                    style="color:var(--primary-color); text-decoration:none; margin-right:8px;">配置</a>
+                                            <td class="action-icons">
                                                 <a href="javascript:void(0)" onclick="copyTemplateCode('默认商品详情页模板')"
-                                                    style="color:var(--primary-color); text-decoration:none;">复制代码</a>
+                                                    style="color:var(--primary-color); text-decoration:none; margin-right:12px;">复制代码</a>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td><input type="checkbox" class="checkbox" disabled></td>
-                                            <td>百货商品详情模板1 <span class="system-tag">系统</span></td>
+                                            <td><a href="#"
+                                                    style="color:var(--primary-color); text-decoration:none; cursor:pointer; font-weight:500;"
+                                                    title="点击配置模板">百货商品详情模板1</a> <span class="system-tag">系统</span></td>
                                             <td>1,204 件</td>
-                                            <td>
-                                                <a href="#"
-                                                    style="color:var(--primary-color); text-decoration:none; margin-right:8px;">配置</a>
+                                            <td class="action-icons">
                                                 <a href="javascript:void(0)" onclick="copyTemplateCode('百货商品详情模板1')"
-                                                    style="color:var(--primary-color); text-decoration:none;">复制代码</a>
+                                                    style="color:var(--primary-color); text-decoration:none; margin-right:12px;">复制代码</a>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td><input type="checkbox" class="checkbox row-checkbox"></td>
-                                            <td>秋季特惠款模板</td>
+                                            <td><a href="#"
+                                                    style="color:var(--primary-color); text-decoration:none; cursor:pointer; font-weight:500;"
+                                                    title="点击配置模板">秋季特惠款模板</a></td>
                                             <td>15 件</td>
-                                            <td>
-                                                <a href="#"
-                                                    style="color:var(--primary-color); text-decoration:none; margin-right:8px;">配置</a>
+                                            <td class="action-icons">
+                                                <a href="javascript:void(0)" onclick="renameTemplate('秋季特惠款模板', this)"
+                                                    style="color:var(--primary-color); text-decoration:none; margin-right:12px;">重命名</a>
                                                 <a href="javascript:void(0)" onclick="copyTemplateCode('秋季特惠款模板')"
-                                                    style="color:var(--primary-color); text-decoration:none; margin-right:8px;">复制代码</a>
+                                                    style="color:var(--primary-color); text-decoration:none; margin-right:12px;">复制代码</a>
                                                 <a href="javascript:void(0)" class="delete-link"
                                                     style="color:var(--danger-color); text-decoration:none;">删除</a>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td><input type="checkbox" class="checkbox row-checkbox"></td>
-                                            <td>男装专享详情页</td>
+                                            <td><a href="#"
+                                                    style="color:var(--primary-color); text-decoration:none; cursor:pointer; font-weight:500;"
+                                                    title="点击配置模板">男装专享详情页</a></td>
                                             <td>340 件</td>
-                                            <td>
-                                                <a href="#"
-                                                    style="color:var(--primary-color); text-decoration:none; margin-right:8px;">配置</a>
+                                            <td class="action-icons">
+                                                <a href="javascript:void(0)" onclick="renameTemplate('男装专享详情页', this)"
+                                                    style="color:var(--primary-color); text-decoration:none; margin-right:12px;">重命名</a>
                                                 <a href="javascript:void(0)" onclick="copyTemplateCode('男装专享详情页')"
-                                                    style="color:var(--primary-color); text-decoration:none; margin-right:8px;">复制代码</a>
+                                                    style="color:var(--primary-color); text-decoration:none; margin-right:12px;">复制代码</a>
                                                 <a href="javascript:void(0)" class="delete-link"
                                                     style="color:var(--danger-color); text-decoration:none;">删除</a>
                                             </td>
@@ -1173,7 +1196,7 @@
                                     <label
                                         style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
                                         <input type="radio" name="createMethod" value="json"
-                                            onchange="switchCreateMethod('json')"> 导入 JSON 代码
+                                            onchange="switchCreateMethod('json')"> 导入代码
                                     </label>
                                 </div>
                             </div>
@@ -1191,10 +1214,10 @@
                             <!-- Method: JSON -->
                             <div id="method-json" style="display: none;">
                                 <div class="form-item">
-                                    <label class="form-label"><span class="required">*</span>JSON 代码</label>
+                                    <label class="form-label"><span class="required">*</span>模板代码</label>
                                     <textarea class="form-input"
                                         style="height: 120px; padding: 12px; resize: none; font-family: monospace;"
-                                        placeholder="请粘贴从其他店铺复制的加密 JSON 代码"></textarea>
+                                        placeholder="请粘贴代码"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -1252,7 +1275,7 @@
                         <li><strong>管理入口：</strong>由原有下拉菜单升级为高度集成管理弹窗。</li>
                         <li><strong>批量处理：</strong>支持全选/批量勾选删除，解决历史模板清理难题。</li>
                         <li><strong>复制/移植：</strong>支持“复制代码”生成加密 JSON，用于跨店快速同步装修内容。</li>
-                        <li><strong>灵活创建：</strong>新增“基于 JSON 导入”创建方式，实现一秒跨店迁移。</li>
+                        <li><strong>灵活创建：</strong>新增“模板代码”创建方式，实现一秒跨店迁移。</li>
                     </ul>
 
                     <h3>交互细则</h3>
@@ -1362,7 +1385,17 @@
         }
 
         function copyTemplateCode(name) {
-            showToast('复制Json代码成功');
+            showToast('复制模板代码成功');
+        }
+
+        function renameTemplate(oldName, el) {
+            const row = el.closest('tr');
+            const nameCell = row.cells[1];
+            const newName = prompt('重命名模板 [' + oldName + '] 为：', oldName);
+            if (newName && newName.trim() !== '') {
+                nameCell.firstChild.textContent = newName + ' ';
+                showToast('重命名成功');
+            }
         }
 
         if (newTplName) {

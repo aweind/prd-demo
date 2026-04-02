@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单确认邮件AB测试 - 需求原型</title>
+    <style>
+        :root {
+            --primary-color: #3860f4;
+            --text-main: #333333;
+            --text-secondary: #737373;
+            --text-light: #999999;
+            --border-color: #e5e5e5;
+            --bg-color: #f7f7f7;
+            --email-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 60px 40px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .version-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .version-badge {
+            position: absolute;
+            top: -16px;
+            left: -16px;
+            background: var(--primary-color);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(56, 96, 244, 0.3);
+            z-index: 10;
+        }
+
+        .version-badge.version-b {
+            background: #faad14;
+            box-shadow: 0 4px 12px rgba(250, 173, 20, 0.3);
+        }
+
+        .email-container {
+            width: 100%;
+            background-color: var(--email-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+        }
+
+        /* Header */
+        .shop-name {
+            font-size: 28px;
+            font-weight: 500;
+            color: var(--text-main);
+            text-align: center;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .order-number {
+            font-size: 12px;
+            color: var(--text-light);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 40px;
+        }
+
+        /* Hero */
+        .hero-title {
+            font-size: 24px;
+            font-weight: 400;
+            color: var(--text-main);
+            margin-bottom: 16px;
+        }
+
+        .hero-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .action-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .btn-view-order {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .btn-view-order:hover {
+            background-color: #2b4cc7;
+        }
+
+        .action-or {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 12px;
+        }
+
+        .link-visit-store {
+            font-size: 14px;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .link-visit-store:hover {
+            text-decoration: underline;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--text-main);
+            margin-bottom: 24px;
+        }
+
+        /* Order Summary */
+        .order-summary {
+            margin-bottom: 40px;
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .product-img {
+            width: 64px;
+            height: 64px;
+            background-color: #f2f2f2;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-right: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .product-img svg {
+            width: 24px;
+            height: 24px;
+            fill: #cccccc;
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-name {
+            font-size: 14px;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .product-variant {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .product-price {
+            font-size: 14px;
+            color: var(--text-main);
+            font-weight: 500;
+            margin-left: 16px;
+        }
+
+        /* Summary Lines */
+        .summary-block {
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 24px 0;
+            margin-bottom: 24px;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .summary-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .summary-line.total {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .total-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 40px;
+        }
+
+        .saved-text {
+            text-align: right;
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        /* Customer Info */
+        .customer-info {
+            margin-bottom: 40px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px 24px;
+        }
+
+        .info-block {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .info-value.bold {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Footer */
+        .email-footer {
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .email-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .email-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- VERSION A -->
+    <div class="version-wrapper">
+        <div class="version-badge">A版本</div>
+        <div class="email-container">
+
+            <!-- Header -->
+            <div class="shop-name">Demostore</div>
+            <div class="order-number">ORDER #00000001</div>
+
+            <!-- Hero Section -->
+            <h2 class="hero-title">Thank you for your purchase!</h2>
+            <p class="hero-text">
+                Hi linjoe, we are getting your order ready to be shipped. We will notify you when it has been sent.
+            </p>
+
+            <div class="action-container">
+                <a href="#" class="btn-view-order">View your order</a>
+                <div class="action-or">or</div>
+                <a href="#" class="link-visit-store">Visit our store</a>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h3 class="section-title">Order summary</h3>
+
+                <div class="product-item">
+                    <div class="product-img">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                        </svg>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">🔥 49% DE REDUCTION 🔥 Mini drone volant Fly Orb Pro Flying Spinner
+                            (Achetez 2 pièces, livraison gratuite) × 1</div>
+                        <div class="product-variant">BLEU</div>
+                    </div>
+                    <div class="product-price">£11.99</div>
+                </div>
+
+                <div class="summary-block">
+                    <div class="summary-line">
+                        <span>Subtotal</span>
+                        <span>£11.99</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Discount</span>
+                        <span>- £3.60</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Shipping insurance</span>
+                        <span>£0.24</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Shipping</span>
+                        <span>Free</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Tax</span>
+                        <span>£0.42</span>
+                    </div>
+                </div>
+
+                <div class="total-container">
+                    <div class="summary-line total">
+                        <span>Total</span>
+                        <span>£9.05</span>
+                    </div>
+                    <div class="saved-text">You saved £3.60</div>
+                </div>
+            </div>
+
+            <!-- Customer Information -->
+            <div class="customer-info">
+                <h3 class="section-title">Customer information</h3>
+
+                <div class="info-grid">
+                    <!-- Shipping Address -->
+                    <div class="info-block">
+                        <div class="info-label">Shipping address</div>
+                        <div class="info-value">
+                            joe lin 36616 Newark Boulevard Newark 94560 P H<br>
+                            +63 05137172161
+                        </div>
+                    </div>
+
+                    <!-- Billing Address -->
+                    <div class="info-block">
+                        <div class="info-label">Billing address</div>
+                        <div class="info-value">
+                            joe lin 36616 Newark Boulevard Newark 94560 P H<br>
+                            123123@qq.com<br>
+                            +63 05137172161
+                        </div>
+                    </div>
+
+                    <!-- Shipping Method -->
+                    <div class="info-block">
+                        <div class="info-label">Shipping method</div>
+                        <div class="info-value">free</div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="info-block">
+                        <div class="info-label">Payment method</div>
+                        <div class="info-value">
+                            Credit Card — <span class="bold">£9.05</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="email-footer">
+                If you have any questions, reply to this email or contact us at <a
+                    href="mailto:support@qq.com">support@qq.com</a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- VERSION B -->
+    <div class="version-wrapper">
+        <div class="version-badge version-b">B版本</div>
+        <div class="email-container">
+
+            <!-- Header -->
+            <div class="shop-name">Demostore</div>
+            <div class="order-number">ORDER #00000001</div>
+
+            <!-- Hero Section -->
+            <h2 class="hero-title">Thank you for your purchase!</h2>
+            <p class="hero-text">
+                Hi linjoe, we are getting your order ready to be shipped. We will notify you when it has been sent.
+            </p>
+
+            <!-- [DIFF #1] B版本新增模块 -->
+            <div style="position: relative; margin-bottom: 24px;">
+                <!-- 气泡标注 -->
+                <div style="position: absolute; right: -220px; top: 0; width: 200px;">
+                    <div style="background: #faad14; color: #fff; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; line-height: 1.5; box-shadow: 0 2px 8px rgba(250,173,20,0.35); position: relative;">
+                        ➕ B版本新增<br>
+                        <span style="font-weight: 400; opacity: 0.9;">A版本无此段落</span>
+                        <!-- 三角尖指向 -->
+                        <div style="position: absolute; left: -8px; top: 10px; width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-right: 8px solid #faad14;"></div>
+                    </div>
+                </div>
+                <p style="font-size: 16px; font-weight: 600; color: #333333; line-height: 1.7; margin: 0;">
+                    If you have any questions about the product information, logistics tracking, or any other aspects of
+                    your order, please feel free to email us at any time（<a href="mailto:support@qq.com"
+                        style="color: #3860f4; text-decoration: none;">support@qq.com</a>）for consultation. We will
+                    answer your questions as soon as possible and fully guarantee your order experience.
+                </p>
+            </div>
+
+            <div class="action-container">
+                <a href="#" class="btn-view-order" style="background-color: #3860F4;">View your order</a>
+                <div class="action-or">or</div>
+                <a href="#" class="link-visit-store">Visit our store</a>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h3 class="section-title">Order summary</h3>
+
+                <div class="product-item">
+                    <div class="product-img">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                        </svg>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">🔥 49% DE REDUCTION 🔥 Mini drone volant Fly Orb Pro Flying Spinner
+                            (Achetez 2 pièces, livraison gratuite) × 1</div>
+                        <div class="product-variant">BLEU</div>
+                    </div>
+                    <div class="product-price">£11.99</div>
+                </div>
+
+                <div class="summary-block">
+                    <div class="summary-line">
+                        <span>Subtotal</span>
+                        <span>£11.99</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Discount</span>
+                        <span>- £3.60</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Shipping insurance</span>
+                        <span>£0.24</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Shipping</span>
+                        <span>Free</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Tax</span>
+                        <span>£0.42</span>
+                    </div>
+                </div>
+
+                <div class="total-container">
+                    <div class="summary-line total">
+                        <span>Total</span>
+                        <span>£9.05</span>
+                    </div>
+                    <div class="saved-text">You saved £3.60</div>
+                </div>
+            </div>
+
+            <!-- Customer Information -->
+            <div class="customer-info">
+                <h3 class="section-title">Customer information</h3>
+
+                <div class="info-grid">
+                    <!-- Shipping Address -->
+                    <div class="info-block">
+                        <div class="info-label">Shipping address</div>
+                        <div class="info-value">
+                            joe lin 36616 Newark Boulevard Newark 94560 P H<br>
+                            +63 05137172161
+                        </div>
+                    </div>
+
+                    <!-- Billing Address -->
+                    <div class="info-block">
+                        <div class="info-label">Billing address</div>
+                        <div class="info-value">
+                            joe lin 36616 Newark Boulevard Newark 94560 P H<br>
+                            123123@qq.com<br>
+                            +63 05137172161
+                        </div>
+                    </div>
+
+                    <!-- Shipping Method -->
+                    <div class="info-block">
+                        <div class="info-label">Shipping method</div>
+                        <div class="info-value">free</div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="info-block">
+                        <div class="info-label">Payment method</div>
+                        <div class="info-value">
+                            Credit Card — <span class="bold">£9.05</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [DIFF #2] B版本底部文案变更 -->
+            <div style="position: relative;">
+                <!-- 气泡标注 -->
+                <div style="position: absolute; right: -220px; top: 0; width: 200px;">
+                    <div style="background: #faad14; color: #fff; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; line-height: 1.5; box-shadow: 0 2px 8px rgba(250,173,20,0.35); position: relative;">
+                        ✏️ B版本文案变更<br>
+                        <span style="font-weight: 400; opacity: 0.9;">A版本为普通联系小字段</span>
+                        <!-- 三角尖指向 -->
+                        <div style="position: absolute; left: -8px; top: 10px; width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-right: 8px solid #faad14;"></div>
+                    </div>
+                </div>
+                <div class="email-footer" style="font-size: 14px; font-weight: 700; color: #000000; border-top: 1px solid var(--border-color); padding-top: 24px; line-height: 1.6;">
+                    For any order related matters, send an email, and our one-on-one exclusive consultant is always online to provide you with exclusive answers.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>
